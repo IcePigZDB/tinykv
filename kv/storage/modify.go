@@ -34,6 +34,7 @@ func (m *Modify) Value() []byte {
 	return nil
 }
 
+// Column family
 func (m *Modify) Cf() string {
 	switch m.Data.(type) {
 	case Put:
