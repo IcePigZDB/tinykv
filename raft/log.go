@@ -14,7 +14,11 @@
 
 package raft
 
-import pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
+import (
+	"log"
+
+	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
+)
 
 // RaftLog manage the log entries, its struct look like:
 //
@@ -50,13 +54,27 @@ type RaftLog struct {
 	pendingSnapshot *pb.Snapshot
 
 	// Your Data Here (2A).
+	FirstIndex uint64
 }
 
 // newLog returns log using the given storage. It recovers the log
 // to the state that it just commits and applies the latest snapshot.
 func newLog(storage Storage) *RaftLog {
 	// Your Code Here (2A).
-	return nil
+	lo, _ := storage.FirstIndex()             // 1
+	hi, _ := storage.LastIndex()              // 0
+	entries, err := storage.Entries(lo, hi+1) //(1,1)
+	if err != nil {
+		log.Panic(err)
+	}
+	return &RaftLog{
+		storage:    storage,
+		entries:    entries,
+		committed:  lo - 1,
+		applied:    lo - 1,
+		stabled:    hi, // 因为如果storage不为空的话，从storage拿出来最大的就是Stable的
+		FirstIndex: lo, // 1
+	}
 }
 
 // We need to compact the log entries in some point of time like
@@ -69,23 +87,81 @@ func (l *RaftLog) maybeCompact() {
 // unstableEntries return all the unstable entries
 func (l *RaftLog) unstableEntries() []pb.Entry {
 	// Your Code Here (2A).
+	if len(l.entries) > 0 {
+		// +1 begin from stable idx
+		return l.entries[l.stabled-l.FirstIndex+1:]
+	}
 	return nil
 }
 
 // nextEnts returns all the committed but not applied entries
 func (l *RaftLog) nextEnts() (ents []pb.Entry) {
 	// Your Code Here (2A).
+	if len(l.entries) > 0 {
+		// do not include [l.applid-l.FirstIndex+1,l.committed-l.FirstIndex+1)
+		return l.entries[l.applied-l.FirstIndex+1 : l.committed-l.FirstIndex+1]
+	}
 	return nil
 }
+
+// func (l *RaftLog) getEnts(lo int, hi int) (ents []pb.Entry) {
+// return l.entries[l.toSliceIndex(uint64(lo)) : l.toSliceIndex(uint64(hi))+1]
+// }
 
 // LastIndex return the last index of the log entries
 func (l *RaftLog) LastIndex() uint64 {
 	// Your Code Here (2A).
-	return 0
+	var idx uint64
+	if !IsEmptySnap(l.pendingSnapshot) {
+		idx = l.pendingSnapshot.Metadata.Index
+	}
+	if len(l.entries) > 0 {
+		return l.entries[len(l.entries)-1].Index
+	}
+	i, _ := l.storage.LastIndex()
+	return max(idx, i)
 }
 
 // Term return the term of the entry in the given index
 func (l *RaftLog) Term(i uint64) (uint64, error) {
 	// Your Code Here (2A).
-	return 0, nil
+	// return are the same
+	if len(l.entries) > 0 && i >= l.FirstIndex {
+		return l.entries[i-l.FirstIndex].Term, nil
+	}
+
+	term, err := l.storage.Term(i)
+	if err == ErrUnavailable && !IsEmptySnap(l.pendingSnapshot) {
+		// luckly want snapshot point's term
+		if i == l.pendingSnapshot.Metadata.Index {
+			term = l.pendingSnapshot.Metadata.Term
+			err = nil
+			// ErrCompacted small than ErrUnavailable
+		} else if i < l.pendingSnapshot.Metadata.Index {
+			err = ErrCompacted
+		}
+	}
+	return term, err
+}
+
+func (l *RaftLog) toSliceIndex(i uint64) int {
+	idx := int(i - l.FirstIndex)
+	if idx < 0 {
+		log.Panic("toSliceIndex: index<0")
+	}
+	return idx
+}
+
+func (l *RaftLog) toEntryIndex(i int) uint64 {
+	return uint64(i) + l.FirstIndex
+}
+
+func (l *RaftLog) commitTo(tocommit uint64) {
+	// never decrease commit
+	if l.committed < tocommit {
+		if l.LastIndex() < tocommit {
+			log.Panicf("tocommit(%d) is out of range [lastIndex(%d)]. Was the raft log corrupted, truncated, or lost?", tocommit, l.LastIndex())
+		}
+		l.committed = tocommit
+	}
 }

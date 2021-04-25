@@ -33,8 +33,10 @@ func (cb *Callback) WaitResp() *raft_cmdpb.RaftCmdResponse {
 func (cb *Callback) WaitRespWithTimeout(timeout time.Duration) *raft_cmdpb.RaftCmdResponse {
 	select {
 	case <-cb.done:
+		// fmt.Printf("done")
 		return cb.Resp
 	case <-time.After(timeout):
+		// fmt.Printf("timeout")
 		return cb.Resp
 	}
 }

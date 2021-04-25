@@ -16,26 +16,26 @@ type Config struct {
 	DBPath string // Directory to store the data in. Should exist and be writable.
 
 	// raft_base_tick_interval is a base tick interval (ms).
-	RaftBaseTickInterval     time.Duration
-	RaftHeartbeatTicks       int
-	RaftElectionTimeoutTicks int
+	RaftBaseTickInterval     time.Duration // net/http.maxWriteWaitBeforeConnReuse (50000000) 50ms
+	RaftHeartbeatTicks       int           // 2
+	RaftElectionTimeoutTicks int           // 10
 
 	// Interval to gc unnecessary raft log (ms).
-	RaftLogGCTickInterval time.Duration
+	RaftLogGCTickInterval time.Duration // net/http.maxWriteWaitBeforeConnReuse (50000000) 50ms
 	// When entry count exceed this value, gc will be forced trigger.
-	RaftLogGcCountLimit uint64
+	RaftLogGcCountLimit uint64 // 128000
 
 	// Interval (ms) to check region whether need to be split or not.
-	SplitRegionCheckTickInterval time.Duration
+	SplitRegionCheckTickInterval time.Duration // 100000000 ns 100 ms
 	// delay time before deleting a stale peer
-	SchedulerHeartbeatTickInterval      time.Duration
-	SchedulerStoreHeartbeatTickInterval time.Duration
+	SchedulerHeartbeatTickInterval      time.Duration // 100000000 ns 100 ms
+	SchedulerStoreHeartbeatTickInterval time.Duration // net/http.shutdownPollIntervalMax (500000000) 500ms
 
 	// When region [a,e) size meets regionMaxSize, it will be split into
 	// several regions [a,b), [b,c), [c,d), [d,e). And the size of [a,b),
 	// [b,c), [c,d) will be regionSplitSize (maybe a little larger).
-	RegionMaxSize   uint64
-	RegionSplitSize uint64
+	RegionMaxSize   uint64 // 150994944
+	RegionSplitSize uint64 // 100663296
 }
 
 func (c *Config) Validate() error {
@@ -83,7 +83,9 @@ func NewDefaultConfig() *Config {
 
 func NewTestConfig() *Config {
 	return &Config{
-		LogLevel:                 "info",
+		// LogLevel: "error",
+		LogLevel: "error",
+		// LogLevel:                 "debug",
 		Raft:                     true,
 		RaftBaseTickInterval:     50 * time.Millisecond,
 		RaftHeartbeatTicks:       2,

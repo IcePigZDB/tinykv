@@ -48,6 +48,7 @@ type stateMachine interface {
 	readMessages() []pb.Message
 }
 
+// Raft implement Step & readMessages means Raft is a kind of implement of stateMachine
 func (r *Raft) readMessages() []pb.Message {
 	msgs := r.msgs
 	r.msgs = make([]pb.Message, 0)
@@ -55,6 +56,7 @@ func (r *Raft) readMessages() []pb.Message {
 	return msgs
 }
 
+// TestProgressLeader2AB test leader append propose sent by client
 func TestProgressLeader2AB(t *testing.T) {
 	r := newTestRaft(1, []uint64{1, 2}, 5, 1, NewMemoryStorage())
 	r.becomeCandidate()

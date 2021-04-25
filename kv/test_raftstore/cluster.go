@@ -56,7 +56,7 @@ func (c *Cluster) Start() {
 	clusterID := c.schedulerClient.GetClusterID(ctx)
 
 	for storeID := uint64(1); storeID <= uint64(c.count); storeID++ {
-		dbPath, err := ioutil.TempDir("", "test-raftstore")
+		dbPath, err := ioutil.TempDir("/tinykvTmp", "test-raftstore")
 		if err != nil {
 			panic(err)
 		}
@@ -180,11 +180,13 @@ func (c *Cluster) AllocPeer(storeID uint64) *metapb.Peer {
 }
 
 func (c *Cluster) Request(key []byte, reqs []*raft_cmdpb.Request, timeout time.Duration) (*raft_cmdpb.RaftCmdResponse, *badger.Txn) {
+	log.Infof("key:%s,reqs%+v", key, reqs)
 	startTime := time.Now()
 	for i := 0; i < 10 || time.Now().Sub(startTime) < timeout; i++ {
 		region := c.GetRegion(key)
 		regionID := region.GetId()
 		req := NewRequest(regionID, region.RegionEpoch, reqs)
+		log.Infof("+++++Request %dth req, reqs: %+v", i, req.Requests)
 		resp, txn := c.CallCommandOnLeader(&req, timeout)
 		if resp == nil {
 			// it should be timeouted innerly
@@ -197,6 +199,7 @@ func (c *Cluster) Request(key []byte, reqs []*raft_cmdpb.Request, timeout time.D
 		}
 		return resp, txn
 	}
+	log.Info("++++++Requset request timeout panic")
 	panic("request timeout")
 }
 
@@ -211,13 +214,18 @@ func (c *Cluster) CallCommandOnLeader(request *raft_cmdpb.RaftCmdRequest, timeou
 	leader := c.LeaderOfRegion(regionID)
 	for {
 		if time.Now().Sub(startTime) > timeout {
+			log.Info(timeout)
 			return nil, nil
 		}
 		if leader == nil {
 			panic(fmt.Sprintf("can't get leader of region %d", regionID))
 		}
 		request.Header.Peer = leader
+		log.Debugf("+++++ CallCommandOnLeader regionID:%d,leader:%d,requset.Header.Peer:%d",
+			regionID, leader, request.Header.Peer)
 		resp, txn := c.CallCommand(request, 1*time.Second)
+		// log.Debugf("+++++ CallCommandOnLeader regionID:%d,leader:%d,requset.Header.Peer:%d,resp:%+v",
+		// regionID, leader, request.Header.Peer, resp)
 		if resp == nil {
 			log.Debugf("can't call command %s on leader %d of region %d", request.String(), leader.GetId(), regionID)
 			newLeader := c.LeaderOfRegion(regionID)

@@ -147,9 +147,10 @@ func NewNodeSimulator(schedulerClient scheduler_client.Client) *NodeSimulator {
 func (c *NodeSimulator) RunStore(cfg *config.Config, engine *engine_util.Engines, ctx context.Context) error {
 	c.Lock()
 	defer c.Unlock()
-
+	// raftRouter:peerSender(w&r) storeSender(w)
 	raftRouter, raftSystem := raftstore.CreateRaftstore(cfg)
 	snapManager := snap.NewSnapManager(cfg.DBPath + "/snap")
+	// TODO Node may about PD
 	node := raftstore.NewNode(raftSystem, cfg, c.schedulerClient)
 
 	err := node.Start(ctx, engine, c.trans, snapManager)
@@ -159,6 +160,7 @@ func (c *NodeSimulator) RunStore(cfg *config.Config, engine *engine_util.Engines
 
 	storeID := node.GetStoreID()
 	c.nodes[storeID] = node
+
 	c.trans.AddStore(storeID, raftRouter, snapManager)
 
 	return nil
@@ -212,7 +214,7 @@ func (c *NodeSimulator) CallCommandOnStore(storeID uint64, request *raft_cmdpb.R
 	if err != nil {
 		return nil, nil
 	}
-
+	// fetch resp from cb
 	resp := cb.WaitRespWithTimeout(timeout)
 	return resp, cb.Txn
 }

@@ -34,9 +34,10 @@ type storeState struct {
 func newStoreState(cfg *config.Config) (chan<- message.Msg, *storeState) {
 	ch := make(chan message.Msg, 40960)
 	state := &storeState{
-		receiver: (<-chan message.Msg)(ch),
+		receiver: (<-chan message.Msg)(ch), // storeSender(w)
 		ticker:   newStoreTicker(cfg),
 	}
+	// storeSender channel only write
 	return (chan<- message.Msg)(ch), state
 }
 
@@ -60,7 +61,7 @@ func (sw *storeWorker) run(closeCh <-chan struct{}, wg *sync.WaitGroup) {
 		select {
 		case <-closeCh:
 			return
-		case msg = <-sw.receiver:
+		case msg = <-sw.receiver: // fetch from storeSender
 		}
 		sw.handleMsg(msg)
 	}

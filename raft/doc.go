@@ -192,18 +192,22 @@ advancing with the given eraftpb.Message. Each step is determined by its
 eraftpb.MessageType. Note that every step is checked by one common method
 'Step' that safety-checks the terms of node and incoming message to prevent
 stale log entries:
+	receiver
 
+	follower,candidate : doElection
 	'MessageType_MsgHup' is used for election. If a node is a follower or candidate, the
 	'tick' function in 'raft' struct is set as 'tickElection'. If a follower or
 	candidate has not received any heartbeat before the election timeout, it
 	passes 'MessageType_MsgHup' to its Step method and becomes (or remains) a candidate to
 	start a new election.
 
+	leader :  bcastHeartbeat
 	'MessageType_MsgBeat' is an internal type that signals the leader to send a heartbeat of
 	the 'MessageType_MsgHeartbeat' type. If a node is a leader, the 'tick' function in
 	the 'raft' struct is set as 'tickHeartbeat', and triggers the leader to
 	send periodic 'MessageType_MsgHeartbeat' messages to its followers.
 
+	leader : appendEntry sendAppend
 	'MessageType_MsgPropose' proposes to append data to its log entries. This is a special
 	type to redirect proposals to the leader. Therefore, send method overwrites
 	eraftpb.Message's term with its HardState's term to avoid attaching its
@@ -215,6 +219,7 @@ stale log entries:
 	method. It is stored with sender's ID and later forwarded to the leader by
 	rafthttp package.
 
+	follower,candidate,leader : handleAppendEntries
 	'MessageType_MsgAppend' contains log entries to replicate. A leader calls bcastAppend,
 	which calls sendAppend, which sends soon-to-be-replicated logs in 'MessageType_MsgAppend'
 	type. When 'MessageType_MsgAppend' is passed to candidate's Step method, candidate reverts
@@ -222,11 +227,13 @@ stale log entries:
 	'MessageType_MsgAppend' messages. Candidate and follower respond to this message in
 	'MessageType_MsgAppendResponse' type.
 
+	leader : handleAppendEntriesResponse
 	'MessageType_MsgAppendResponse' is response to log replication request('MessageType_MsgAppend'). When
 	'MessageType_MsgAppend' is passed to candidate or follower's Step method, it responds by
 	calling 'handleAppendEntries' method, which sends 'MessageType_MsgAppendResponse' to raft
 	mailbox.
 
+	follower,candidate,leader : 
 	'MessageType_MsgRequestVote' requests votes for election. When a node is a follower or
 	candidate and 'MessageType_MsgHup' is passed to its Step method, then the node calls
 	'campaign' method to campaign itself to become a leader. Once 'campaign'

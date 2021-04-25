@@ -202,8 +202,8 @@ type workers struct {
 
 type Raftstore struct {
 	ctx        *GlobalContext
-	storeState *storeState
-	router     *router
+	storeState *storeState // storeSender
+	router     *router     // peerSender
 	workers    *workers
 	tickDriver *tickDriver
 	closeCh    chan struct{}
@@ -262,17 +262,22 @@ func (bs *Raftstore) start(
 }
 
 func (bs *Raftstore) startWorkers(peers []*peer) {
+	// a Node/RaftStore/RawNode/raft
 	ctx := bs.ctx
 	workers := bs.workers
 	router := bs.router
 	bs.wg.Add(2) // raftWorker, storeWorker
+	// raft worker follow router.peerSender
 	rw := newRaftWorker(ctx, router)
 	go rw.run(bs.closeCh, bs.wg)
+	// store worker follow router.storeSender (storeState.receiver)
 	sw := newStoreWorker(ctx, bs.storeState)
 	go sw.run(bs.closeCh, bs.wg)
+	// start store of peer MsgTypeStoreStart
 	router.sendStore(message.Msg{Type: message.MsgTypeStoreStart, Data: ctx.store})
 	for i := 0; i < len(peers); i++ {
 		regionID := peers[i].regionId
+		// MsgTypeStart is used to start the ticker of peer
 		_ = router.send(regionID, message.Msg{RegionID: regionID, Type: message.MsgTypeStart})
 	}
 	engines := ctx.engine
@@ -280,8 +285,8 @@ func (bs *Raftstore) startWorkers(peers []*peer) {
 	workers.splitCheckWorker.Start(runner.NewSplitCheckHandler(engines.Kv, NewRaftstoreRouter(router), cfg))
 	workers.regionWorker.Start(runner.NewRegionTaskHandler(engines, ctx.snapMgr))
 	workers.raftLogGCWorker.Start(runner.NewRaftLogGCTaskHandler())
-	workers.schedulerWorker.Start(runner.NewSchedulerTaskHandler(ctx.store.Id, ctx.schedulerClient, NewRaftstoreRouter(router)))
 	go bs.tickDriver.run()
+	workers.schedulerWorker.Start(runner.NewSchedulerTaskHandler(ctx.store.Id, ctx.schedulerClient, NewRaftstoreRouter(router)))
 }
 
 func (bs *Raftstore) shutDown() {
@@ -301,14 +306,18 @@ func (bs *Raftstore) shutDown() {
 }
 
 func CreateRaftstore(cfg *config.Config) (*RaftstoreRouter, *Raftstore) {
+	// storeSender init
 	storeSender, storeState := newStoreState(cfg)
+	// peerSender(w&r) & storeSender(w)
 	router := newRouter(storeSender)
 	raftstore := &Raftstore{
-		router:     router,
+		router: router,
+		// storeSender(w)
 		storeState: storeState,
 		tickDriver: newTickDriver(cfg.RaftBaseTickInterval, router, storeState.ticker),
 		closeCh:    make(chan struct{}),
 		wg:         new(sync.WaitGroup),
 	}
+	//
 	return NewRaftstoreRouter(router), raftstore
 }

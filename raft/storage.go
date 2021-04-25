@@ -57,17 +57,20 @@ type Storage interface {
 	// rest of that entry may not be available.
 	Term(i uint64) (uint64, error)
 	// LastIndex returns the index of the last entry in the log.
+	// 返回从0开始，调用entries的时候都需要+1,左闭右开
 	LastIndex() (uint64, error)
 	// FirstIndex returns the index of the first log entry that is
 	// possibly available via Entries (older entries have been incorporated
 	// into the latest Snapshot; if storage only contains the dummy entry the
 	// first log entry is not available).
+	// FirstIndex返回一定是1，这样避免了返回dummy entry.
 	FirstIndex() (uint64, error)
 	// Snapshot returns the most recent snapshot.
 	// If snapshot is temporarily unavailable, it should return ErrSnapshotTemporarilyUnavailable,
 	// so raft state machine could know that Storage needs some time to prepare
 	// snapshot and call Snapshot later.
 	Snapshot() (pb.Snapshot, error)
+
 }
 
 // MemoryStorage implements the Storage interface backed by an
@@ -88,6 +91,7 @@ type MemoryStorage struct {
 func NewMemoryStorage() *MemoryStorage {
 	return &MemoryStorage{
 		// When starting from scratch populate the list with a dummy entry at term zero.
+		// index zero too.
 		ents:     make([]pb.Entry, 1),
 		snapshot: pb.Snapshot{Metadata: &pb.SnapshotMetadata{ConfState: &pb.ConfState{}}},
 	}
@@ -95,6 +99,7 @@ func NewMemoryStorage() *MemoryStorage {
 
 // InitialState implements the Storage interface.
 func (ms *MemoryStorage) InitialState() (pb.HardState, pb.ConfState, error) {
+	// * use for ptr ConfState
 	return ms.hardState, *ms.snapshot.Metadata.ConfState, nil
 }
 
@@ -117,10 +122,11 @@ func (ms *MemoryStorage) Entries(lo, hi uint64) ([]pb.Entry, error) {
 	if hi > ms.lastIndex()+1 {
 		log.Panicf("entries' hi(%d) is out of bound lastindex(%d)", hi, ms.lastIndex())
 	}
-
+	// [lo,hi) default , default python / go like
 	ents := ms.ents[lo-offset : hi-offset]
 	if len(ms.ents) == 1 && len(ents) != 0 {
 		// only contains dummy entries.
+		//TODO what is dummy entries
 		return nil, ErrUnavailable
 	}
 	return ents, nil
@@ -148,6 +154,7 @@ func (ms *MemoryStorage) LastIndex() (uint64, error) {
 }
 
 func (ms *MemoryStorage) lastIndex() uint64 {
+	// dummy entry index 0
 	return ms.ents[0].Index + uint64(len(ms.ents)) - 1
 }
 
@@ -159,6 +166,7 @@ func (ms *MemoryStorage) FirstIndex() (uint64, error) {
 }
 
 func (ms *MemoryStorage) firstIndex() uint64 {
+	// avoid dummy or metadata
 	return ms.ents[0].Index + 1
 }
 

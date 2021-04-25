@@ -360,7 +360,17 @@ func testNonleadersElectionTimeoutNonconflict(t *testing.T, state StateType) {
 // the new entries.
 // Also, it writes the new entry into stable storage.
 // Reference: section 5.3
+// 这个测试的话主要分两步
+// 1. commitNoopEntry,leader把当选leader的NoopEntry发送给follower，
+//    当大多数含leader自己，在这个3个server的例子中，也就是处理第一个返回的时候就说明可以commit了
+//    可以commit之后,leader会更新自己的r.RaftLog.committed，
+//    然后再告知各个follower去更新自己的commit index，测试忽略了
+// 2. 再适用MessageType_MsgPropose消息类型模拟测试leader收到客户端propose提案，使用appendEntries
+//  发送MessageType_MsgAppend消息给follower。
+//  r.Step(pb.Message{From: 1, To: 1, MsgType: pb.MessageType_MsgPropose, Entries: ents})
 func TestLeaderStartReplication2AB(t *testing.T) {
+	// log.SetLevelByString("debug")
+	// log.SetFlags(log.Ldate | log.Ltime | log.Lmicroseconds | log.Lshortfile)
 	s := NewMemoryStorage()
 	r := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, s)
 	r.becomeCandidate()
@@ -375,7 +385,7 @@ func TestLeaderStartReplication2AB(t *testing.T) {
 		t.Errorf("lastIndex = %d, want %d", g, li+1)
 	}
 	if g := r.RaftLog.committed; g != li {
-		t.Errorf("committed = %d, want %d", g, li)
+		t.Errorf("committed = %d, want %d", g, li) // wanted 1
 	}
 	msgs := r.readMessages()
 	sort.Sort(messageSlice(msgs))
@@ -386,7 +396,7 @@ func TestLeaderStartReplication2AB(t *testing.T) {
 		{From: 1, To: 3, Term: 1, MsgType: pb.MessageType_MsgAppend, Index: li, LogTerm: 1, Entries: []*pb.Entry{&ent}, Commit: li},
 	}
 	if !reflect.DeepEqual(msgs, wmsgs) {
-		t.Errorf("msgs = %+v, want %+v", msgs, wmsgs)
+		t.Errorf("msgs = %+v, want %+v", msgs, wmsgs) //wmsgs
 	}
 	if g := r.RaftLog.unstableEntries(); !reflect.DeepEqual(g, wents) {
 		t.Errorf("ents = %+v, want %+v", g, wents)
@@ -400,12 +410,14 @@ func TestLeaderStartReplication2AB(t *testing.T) {
 // and it includes that index in future AppendEntries RPCs so that the other
 // servers eventually find out.
 // Reference: section 5.3
+// 1. commitNoopEntry同上，把当选leader后的第一个空entry，让follower append
+// 2. 发送一个真提议，follower需要接收后，committed再+1 = 2
 func TestLeaderCommitEntry2AB(t *testing.T) {
 	s := NewMemoryStorage()
 	r := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, s)
 	r.becomeCandidate()
 	r.becomeLeader()
-	commitNoopEntry(r, s)
+	commitNoopEntry(r, s) // committed = 1
 	li := r.RaftLog.LastIndex()
 	r.Step(pb.Message{From: 1, To: 1, MsgType: pb.MessageType_MsgPropose, Entries: []*pb.Entry{{Data: []byte("some data")}}})
 
@@ -438,6 +450,7 @@ func TestLeaderCommitEntry2AB(t *testing.T) {
 // TestLeaderAcknowledgeCommit tests that a log entry is committed once the
 // leader that created the entry has replicated it on a majority of the servers.
 // Reference: section 5.3
+// 这个测试模拟了一下模拟了几种集群数量下committed下的情况
 func TestLeaderAcknowledgeCommit2AB(t *testing.T) {
 	tests := []struct {
 		size      int
@@ -453,6 +466,11 @@ func TestLeaderAcknowledgeCommit2AB(t *testing.T) {
 		{5, map[uint64]bool{2: true, 3: true}, true},
 		{5, map[uint64]bool{2: true, 3: true, 4: true}, true},
 		{5, map[uint64]bool{2: true, 3: true, 4: true, 5: true}, true},
+		// TODO 自己添加测试偶数情况？
+		{4, map[uint64]bool{2: true, 3: true, 4: true}, true},
+		{4, map[uint64]bool{2: true, 3: true, 4: false}, true},
+		// TODO 偶数试配点，leaderCommit
+		// {4, map[uint64]bool{2: true, 3: false, 4: false}, false},
 	}
 	for i, tt := range tests {
 		s := NewMemoryStorage()
@@ -469,7 +487,7 @@ func TestLeaderAcknowledgeCommit2AB(t *testing.T) {
 			}
 		}
 
-		if g := r.RaftLog.committed > li; g != tt.wack {
+		if g := (r.RaftLog.committed > li); g != tt.wack {
 			t.Errorf("#%d: ack commit = %v, want %v", i, g, tt.wack)
 		}
 	}
@@ -480,6 +498,8 @@ func TestLeaderAcknowledgeCommit2AB(t *testing.T) {
 // entries created by previous leaders.
 // Also, it applies the entry to its local state machine (in log order).
 // Reference: section 5.3
+// 用Storage来测试Leader能处理上一个leader遗留的存储到storage里面持久化的entries
+// TODO 用becomLeader来测试leader能处理没有持久化的遗留的entries?
 func TestLeaderCommitPrecedingEntries2AB(t *testing.T) {
 	tests := [][]pb.Entry{
 		{},
@@ -489,10 +509,11 @@ func TestLeaderCommitPrecedingEntries2AB(t *testing.T) {
 	}
 	for i, tt := range tests {
 		storage := NewMemoryStorage()
+		// 遗留entries  主要测试 newTestRaft 里面的newLog
 		storage.Append(tt)
 		r := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, storage)
 		r.Term = 2
-		r.becomeCandidate()
+		r.becomeCandidate() // Term 3
 		r.becomeLeader()
 		r.Step(pb.Message{From: 1, To: 1, MsgType: pb.MessageType_MsgPropose, Entries: []*pb.Entry{{Data: []byte("some data")}}})
 
@@ -501,6 +522,7 @@ func TestLeaderCommitPrecedingEntries2AB(t *testing.T) {
 		}
 
 		li := uint64(len(tt))
+		//     precedding  , entries become leader         , append by Msg_MsgPropose
 		wents := append(tt, pb.Entry{Term: 3, Index: li + 1}, pb.Entry{Term: 3, Index: li + 2, Data: []byte("some data")})
 		if g := r.RaftLog.nextEnts(); !reflect.DeepEqual(g, wents) {
 			t.Errorf("#%d: ents = %+v, want %+v", i, g, wents)
@@ -511,6 +533,7 @@ func TestLeaderCommitPrecedingEntries2AB(t *testing.T) {
 // TestFollowerCommitEntry tests that once a follower learns that a log entry
 // is committed, it applies the entry to its local state machine (in log order).
 // Reference: section 5.3
+// 测试hadnleAppendEntries  point 5
 func TestFollowerCommitEntry2AB(t *testing.T) {
 	tests := []struct {
 		ents   []*pb.Entry
@@ -546,7 +569,7 @@ func TestFollowerCommitEntry2AB(t *testing.T) {
 	}
 	for i, tt := range tests {
 		r := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, NewMemoryStorage())
-		r.becomeFollower(1, 2)
+		r.becomeFollower(1, 2) // term 1 leader 2
 
 		r.Step(pb.Message{From: 2, To: 1, MsgType: pb.MessageType_MsgAppend, Term: 1, Entries: tt.ents, Commit: tt.commit})
 
@@ -568,6 +591,7 @@ func TestFollowerCommitEntry2AB(t *testing.T) {
 // then it refuses the new entries. Otherwise it replies that it accepts the
 // append entries.
 // Reference: section 5.3
+// 测试hadnleAppendEntries  point 1,2
 func TestFollowerCheckMessageType_MsgAppend2AB(t *testing.T) {
 	ents := []pb.Entry{{Term: 1, Index: 1}, {Term: 2, Index: 2}}
 	tests := []struct {
@@ -577,7 +601,7 @@ func TestFollowerCheckMessageType_MsgAppend2AB(t *testing.T) {
 	}{
 		// match with committed entries
 		{0, 0, false},
-		{ents[0].Term, ents[0].Index, false},
+		{ents[0].Term, ents[0].Index, false}, // 0 == 0
 		// match with uncommitted entries
 		{ents[1].Term, ents[1].Index, false},
 
@@ -593,7 +617,7 @@ func TestFollowerCheckMessageType_MsgAppend2AB(t *testing.T) {
 		r.RaftLog.committed = 1
 		r.becomeFollower(2, 2)
 		msgs := r.readMessages() // clear message
-
+		// LogTerm: prevLogTerm Index: prevLogIndex entries : nil
 		r.Step(pb.Message{From: 2, To: 1, MsgType: pb.MessageType_MsgAppend, Term: 2, LogTerm: tt.term, Index: tt.index})
 
 		msgs = r.readMessages()
@@ -614,6 +638,7 @@ func TestFollowerCheckMessageType_MsgAppend2AB(t *testing.T) {
 // and append any new entries not already in the log.
 // Also, it writes the new entry into stable storage.
 // Reference: section 5.3
+// 测试handleAppendEntries  point 3,4
 func TestFollowerAppendEntries2AB(t *testing.T) {
 	tests := []struct {
 		index, term uint64
@@ -652,6 +677,9 @@ func TestFollowerAppendEntries2AB(t *testing.T) {
 		r := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, storage)
 		r.becomeFollower(2, 2)
 
+		if i == 3 {
+			i = 3
+		}
 		r.Step(pb.Message{From: 2, To: 1, MsgType: pb.MessageType_MsgAppend, Term: 2, LogTerm: tt.term, Index: tt.index, Entries: tt.ents})
 
 		wents := make([]pb.Entry, 0, len(tt.wents))
@@ -730,16 +758,17 @@ func TestLeaderSyncFollowerLog2AB(t *testing.T) {
 		leadStorage := NewMemoryStorage()
 		leadStorage.Append(ents)
 		lead := newTestRaft(1, []uint64{1, 2, 3}, 10, 1, leadStorage)
-		lead.Term = term
+		lead.Term = term // 8
 		lead.RaftLog.committed = lead.RaftLog.LastIndex()
 		followerStorage := NewMemoryStorage()
 		followerStorage.Append(tt)
 		follower := newTestRaft(2, []uint64{1, 2, 3}, 10, 1, followerStorage)
-		follower.Term = term - 1
+		follower.Term = term - 1 // 7
 		// It is necessary to have a three-node cluster.
 		// The second may have more up-to-date log than the first one, so the
 		// first node needs the vote from the third node to become the leader.
 		n := newNetwork(lead, follower, nopStepper)
+		// 选举 appendEntries, 拒绝，重新appendEntries，同意，committed，再appendEntries
 		n.send(pb.Message{From: 1, To: 1, MsgType: pb.MessageType_MsgHup})
 		// The election occurs in the term after the one we loaded with
 		// lead's term and commited index setted up above.
@@ -849,6 +878,7 @@ func TestVoter2AA(t *testing.T) {
 // TestLeaderOnlyCommitsLogFromCurrentTerm tests that only log entries from the leader’s
 // current term are committed by counting replicas.
 // Reference: section 5.4.2
+// TODO debug again
 func TestLeaderOnlyCommitsLogFromCurrentTerm2AB(t *testing.T) {
 	ents := []pb.Entry{{Term: 1, Index: 1}, {Term: 2, Index: 2}}
 	tests := []struct {
@@ -869,9 +899,14 @@ func TestLeaderOnlyCommitsLogFromCurrentTerm2AB(t *testing.T) {
 		// become leader at term 3
 		r.becomeCandidate()
 		r.becomeLeader()
+		// clear AppendEntries  msgs after become leader
 		r.readMessages()
 		// propose a entry to current term
 		r.Step(pb.Message{From: 1, To: 1, MsgType: pb.MessageType_MsgPropose, Entries: []*pb.Entry{{}}})
+
+		if i == 2 {
+			i = 2
+		}
 
 		r.Step(pb.Message{From: 2, To: 1, MsgType: pb.MessageType_MsgAppendResponse, Term: r.Term, Index: tt.index})
 		if r.RaftLog.committed != tt.wcommit {

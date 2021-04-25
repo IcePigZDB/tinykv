@@ -58,8 +58,8 @@ func InitRaftLocalState(raftEngine *badger.DB, region *metapb.Region) (*rspb.Raf
 		if len(region.Peers) > 0 {
 			// new split region
 			raftState.LastIndex = RaftInitLogIndex
-			raftState.LastTerm = RaftInitLogTerm
-			raftState.HardState.Term = RaftInitLogTerm
+			raftState.LastTerm = RaftInitLogTerm // 5
+			raftState.HardState.Term = RaftInitLogTerm // 5 
 			raftState.HardState.Commit = RaftInitLogIndex
 			err = engine_util.PutMeta(raftEngine, RaftStateKey(region.Id), raftState)
 			if err != nil {

@@ -68,6 +68,7 @@ func (n *Node) Start(ctx context.Context, engines *engine_util.Engines, trans Tr
 	if err != nil {
 		return err
 	}
+	// key point in 2B
 	if err = n.startNode(engines, trans, snapMgr); err != nil {
 		return err
 	}

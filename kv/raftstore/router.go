@@ -5,6 +5,7 @@ import (
 	"sync/atomic"
 
 	"github.com/pingcap-incubator/tinykv/kv/raftstore/message"
+	"github.com/pingcap-incubator/tinykv/log"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/raft_cmdpb"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/raft_serverpb"
 
@@ -26,7 +27,7 @@ type router struct {
 
 func newRouter(storeSender chan<- message.Msg) *router {
 	pm := &router{
-		peerSender:  make(chan message.Msg, 40960),
+		peerSender:  make(chan message.Msg, 40960), // peerSender
 		storeSender: storeSender,
 	}
 	return pm
@@ -58,6 +59,7 @@ func (pr *router) close(regionID uint64) {
 }
 
 func (pr *router) send(regionID uint64, msg message.Msg) error {
+	// put into peerSender
 	msg.RegionID = regionID
 	p := pr.get(regionID)
 	if p == nil || atomic.LoadUint32(&p.closed) == 1 {
@@ -68,6 +70,7 @@ func (pr *router) send(regionID uint64, msg message.Msg) error {
 }
 
 func (pr *router) sendStore(msg message.Msg) {
+	// put into storeSender
 	pr.storeSender <- msg
 }
 
@@ -100,5 +103,6 @@ func (r *RaftstoreRouter) SendRaftCommand(req *raft_cmdpb.RaftCmdRequest, cb *me
 		Callback: cb,
 	}
 	regionID := req.Header.RegionId
+	log.Debugf("+++++SendRaftCommand: req:%v", req)
 	return r.router.send(regionID, message.NewPeerMsg(message.MsgTypeRaftCmd, regionID, cmd))
 }
