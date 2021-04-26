@@ -83,8 +83,8 @@ func NewDefaultConfig() *Config {
 
 func NewTestConfig() *Config {
 	return &Config{
-		// LogLevel: "error",
 		LogLevel: "error",
+		// LogLevel: "debug",
 		// LogLevel:                 "debug",
 		Raft:                     true,
 		RaftBaseTickInterval:     50 * time.Millisecond,

@@ -82,6 +82,14 @@ func newLog(storage Storage) *RaftLog {
 // grow unlimitedly in memory
 func (l *RaftLog) maybeCompact() {
 	// Your Code Here (2C).
+	first, _ := l.storage.FirstIndex()
+	if first > l.FirstIndex {
+		if len(l.entries) > 0 {
+			entries := l.entries[l.toSliceIndex(first):]
+			l.entries = make([]pb.Entry, len(entries))
+			copy(l.entries, entries)
+		}
+	}
 }
 
 // unstableEntries return all the unstable entries
@@ -116,7 +124,8 @@ func (l *RaftLog) LastIndex() uint64 {
 		idx = l.pendingSnapshot.Metadata.Index
 	}
 	if len(l.entries) > 0 {
-		return l.entries[len(l.entries)-1].Index
+		// TODO 不加max好像也没问题，应该是没测试到
+		return max(l.entries[len(l.entries)-1].Index, idx)
 	}
 	i, _ := l.storage.LastIndex()
 	return max(idx, i)
