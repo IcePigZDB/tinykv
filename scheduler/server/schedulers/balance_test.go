@@ -64,6 +64,7 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas13C(c *C) {
 	tc.AddRegionStore(4, 16)
 	// Add region 1 with leader in store 4.
 	tc.AddLeaderRegion(1, 4)
+	// NOTE only one region, so random will get region 1
 	testutil.CheckTransferPeerWithLeaderTransfer(c, sb.Schedule(tc), operator.OpBalance, 4, 1)
 
 	// Test stateFilter.
@@ -95,12 +96,14 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas33C(c *C) {
 	tc.AddRegionStore(2, 15)
 	tc.AddRegionStore(3, 14)
 
+	// Add region 1 with leader in store 1, follower in store 2,3.
 	tc.AddLeaderRegion(1, 1, 2, 3)
 	// This schedule try to replace peer in store 1, but we have no other stores.
 	c.Assert(sb.Schedule(tc), IsNil)
 
 	// Store 4 has smaller region score than store 1.
 	tc.AddRegionStore(4, 2)
+	// NOTE store 1 has the largest regionsize
 	testutil.CheckTransferPeer(c, sb.Schedule(tc), operator.OpBalance, 1, 4)
 
 	// Store 5 has smaller region score than store 4.
@@ -121,6 +124,7 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas33C(c *C) {
 	tc.SetStoreDown(6)
 
 	// Store 7 has different zone with other stores but larger region score than store 1.
+	// TODO should not choose 3
 	tc.AddRegionStore(7, 20)
 	c.Assert(sb.Schedule(tc), IsNil)
 }
@@ -145,6 +149,7 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas53C(c *C) {
 
 	// Store 6 has smaller region score.
 	tc.AddRegionStore(6, 1)
+	// NOTE store 5 has the largest regionsize
 	testutil.CheckTransferPeer(c, sb.Schedule(tc), operator.OpBalance, 5, 6)
 
 	// Store 7 has larger region score and same distinct score with store 6.
@@ -152,6 +157,7 @@ func (s *testBalanceRegionSchedulerSuite) TestReplicas53C(c *C) {
 	testutil.CheckTransferPeer(c, sb.Schedule(tc), operator.OpBalance, 5, 6)
 
 	// Store 1 has smaller region score and higher distinct score.
+	// 1 has smallest regionsize among store without region1, (1,7)
 	tc.AddLeaderRegion(1, 2, 3, 4, 5, 6)
 	testutil.CheckTransferPeer(c, sb.Schedule(tc), operator.OpBalance, 5, 1)
 

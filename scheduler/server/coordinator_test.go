@@ -37,6 +37,7 @@ import (
 
 func newTestScheduleConfig() (*config.ScheduleConfig, *config.ScheduleOption, error) {
 	cfg := config.NewConfig()
+
 	if err := cfg.Adjust(nil); err != nil {
 		return nil, nil, err
 	}

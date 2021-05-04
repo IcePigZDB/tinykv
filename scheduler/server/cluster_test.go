@@ -61,8 +61,10 @@ func (s *testClusterInfoSuite) setUpTestCluster(c *C) (*RaftCluster, []*core.Reg
 
 func (s *testClusterInfoSuite) TestRegionNotUpdate3C(c *C) {
 	cluster, regions := s.setUpTestCluster(c)
-
 	for _, region := range regions {
+		// log.Infof("~~~~~~~~~~~~region.RegionEpoch %v", region.GetRegionEpoch())
+		// update for it because of IsEpochStale does not contain the = case
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
@@ -74,7 +76,7 @@ func (s *testClusterInfoSuite) TestRegionUpdateVersion3C(c *C) {
 	for i, region := range regions {
 		region = region.Clone(core.WithIncVersion())
 		regions[i] = region
-
+		// update for region.RegionEpochconf_ver:2 version:3
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
@@ -84,13 +86,18 @@ func (s *testClusterInfoSuite) TestRegionWithStaleVersion3C(c *C) {
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
+		// (conf_ver, version)
+		// (2,2)
 		origin := region
+		// (2,3)
 		region = origin.Clone(core.WithIncVersion())
 		regions[i] = region
+		// log.Infof("~~~~~~~~~~~~region.RegionEpoch %v", region.GetRegionEpoch())
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
-
+		// (3,2) < (2,3) so stale, (3,3) or greater
 		stale := origin.Clone(core.WithIncConfVer())
+		// log.Infof("~~~~~~~~~~~region.RegionEpoch %v", stale.GetRegionEpoch())
 		c.Assert(cluster.processRegionHeartbeat(stale), NotNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
@@ -100,6 +107,7 @@ func (s *testClusterInfoSuite) TestRegionUpdateVersionAndConfver3C(c *C) {
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
+		// (3,3) > (2,2)
 		region = region.Clone(
 			core.WithIncVersion(),
 			core.WithIncConfVer(),
@@ -117,9 +125,10 @@ func (s *testClusterInfoSuite) TestRegionWithStaleConfVer3C(c *C) {
 		origin := region
 		region = origin.Clone(core.WithIncConfVer())
 		regions[i] = region
+		// (3,2) > (2,2) update(3,2)
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
-
+		// (2,2) < (3,2) stale
 		stale := origin.Clone()
 		c.Assert(cluster.processRegionHeartbeat(stale), NotNil)
 		checkRegions(c, cluster.core.Regions, regions)
@@ -127,6 +136,8 @@ func (s *testClusterInfoSuite) TestRegionWithStaleConfVer3C(c *C) {
 }
 
 func (s *testClusterInfoSuite) TestRegionAddPendingPeer3C(c *C) {
+	// Redundant updates make test pass easily
+	// case: If the new one or original one has pending peer, it cannot be skipped
 	cluster, regions := s.setUpTestCluster(c)
 
 	pendingCounts := make([]int, 3)
@@ -136,6 +147,7 @@ func (s *testClusterInfoSuite) TestRegionAddPendingPeer3C(c *C) {
 
 		region := region.Clone(core.WithPendingPeers([]*metapb.Peer{pendingPeer}))
 		regions[i] = region
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
@@ -143,6 +155,8 @@ func (s *testClusterInfoSuite) TestRegionAddPendingPeer3C(c *C) {
 }
 
 func (s *testClusterInfoSuite) TestRegionRemovePendingPeer3C(c *C) {
+	// Redundant updates make test pass easily
+	// case: If the new one or original one has pending peer, it cannot be skipped
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
@@ -153,6 +167,7 @@ func (s *testClusterInfoSuite) TestRegionRemovePendingPeer3C(c *C) {
 
 		region = region.Clone(core.WithPendingPeers(nil))
 		regions[i] = region
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
@@ -160,23 +175,29 @@ func (s *testClusterInfoSuite) TestRegionRemovePendingPeer3C(c *C) {
 }
 
 func (s *testClusterInfoSuite) TestRegionRemovePeers3C(c *C) {
+	// Redundant updates make test pass easily
+	// case: peers of region change
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
 		region = region.Clone(core.SetPeers(region.GetPeers()[:1]))
 		regions[i] = region
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
 }
 
 func (s *testClusterInfoSuite) TestRegionAddBackPeers3C(c *C) {
+	// Redundant updates make test pass easily
+	// case: peers of region change
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
 		origin := region
 		region = origin.Clone(core.SetPeers(region.GetPeers()[:1]))
 		regions[i] = region
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 
@@ -188,37 +209,50 @@ func (s *testClusterInfoSuite) TestRegionAddBackPeers3C(c *C) {
 }
 
 func (s *testClusterInfoSuite) TestRegionChangeLeader3C(c *C) {
+	// Redundant updates make test pass easily
+	// case: If the leader changed, it cannot be skipped
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
 		region = region.Clone(core.WithLeader(region.GetPeers()[1]))
 		regions[i] = region
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
 }
 
 func (s *testClusterInfoSuite) TestRegionChangeApproximateSize3C(c *C) {
+	// Redundant updates make test pass easily
+	// case: If the ApproximateSize changed, it cannot be skipped
 	cluster, regions := s.setUpTestCluster(c)
 
 	for i, region := range regions {
 		region = region.Clone(core.SetApproximateSize(144))
 		regions[i] = region
+		// update for region.RegionEpochconf_ver:2 version:2
 		c.Assert(cluster.processRegionHeartbeat(region), IsNil)
 		checkRegions(c, cluster.core.Regions, regions)
 	}
 }
 
 func (s *testClusterInfoSuite) TestRegionCounts3C(c *C) {
+	// test update for regionCount regionCount := c.core.GetRegionCount()
+	// update region inside
 	cluster, regions := s.setUpTestCluster(c)
 
 	regionCounts := make(map[uint64]int)
+	// log.Infof("regionCounts:%v", regionCounts)
 	for _, region := range regions {
 		for _, peer := range region.GetPeers() {
+			// log.Infof("cluster.GetStoreRegionCount:%d,count:%d",
+			// cluster.GetStoreRegionCount(peer.GetStoreId()), regionCounts[peer.GetStoreId()])
 			regionCounts[peer.GetStoreId()]++
 		}
 	}
+
 	for id, count := range regionCounts {
+		// log.Infof("cluster.GetStoreRegionCount:%d,count:%d", cluster.GetStoreRegionCount(id), count)
 		c.Assert(cluster.GetStoreRegionCount(id), Equals, count)
 	}
 }
@@ -342,12 +376,15 @@ func (s *testClusterInfoSuite) TestRegionSplitAndMerge3C(c *C) {
 		regions = core.SplitRegions(regions)
 		heartbeatRegions(c, cluster, regions)
 	}
-
+	// 128 2^7
+	// log.Infof("region length after split:%d", len(regions))
 	// Merge.
 	for i := 0; i < n; i++ {
 		regions = core.MergeRegions(regions)
 		heartbeatRegions(c, cluster, regions)
 	}
+	// 1
+	// log.Infof("region length after merge:%d", len(regions))
 
 	// Split twice and merge once.
 	for i := 0; i < n*2; i++ {
@@ -416,6 +453,7 @@ func (s *testClusterSuite) TestConcurrentHandleRegion3C(c *C) {
 			Region: &metapb.Region{
 				Id:    s.allocID(c),
 				Peers: []*metapb.Peer{peer},
+				// nil regionEpoch
 			},
 			Leader: peer,
 		}
@@ -448,6 +486,7 @@ func (s *testClusterSuite) TestConcurrentHandleRegion3C(c *C) {
 				Version: initEpochVersion,
 			},
 		}
+
 		if i == 0 {
 			region.StartKey = []byte("")
 		} else if i == concurrent-1 {

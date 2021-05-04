@@ -118,6 +118,7 @@ type Config struct {
 // NewConfig creates a new config.
 func NewConfig() *Config {
 	cfg := &Config{}
+
 	cfg.FlagSet = flag.NewFlagSet("pd", flag.ContinueOnError)
 	fs := cfg.FlagSet
 
@@ -142,7 +143,7 @@ func NewConfig() *Config {
 	fs.StringVar(&cfg.Security.CertPath, "cert", "", "Path of file that contains X509 certificate in PEM format")
 	fs.StringVar(&cfg.Security.KeyPath, "key", "", "Path of file that contains X509 key in PEM format")
 	fs.BoolVar(&cfg.ForceNewCluster, "force-new-cluster", false, "Force to create a new one-member cluster")
-
+	
 	return cfg
 }
 

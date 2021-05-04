@@ -21,6 +21,8 @@ import (
 	"time"
 
 	"github.com/gogo/protobuf/proto"
+	"github.com/pingcap-incubator/tinykv/kv/raftstore/util"
+	"github.com/pingcap-incubator/tinykv/log"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/metapb"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/schedulerpb"
 	"github.com/pingcap-incubator/tinykv/scheduler/pkg/logutil"
@@ -30,7 +32,6 @@ import (
 	"github.com/pingcap-incubator/tinykv/scheduler/server/id"
 	"github.com/pingcap-incubator/tinykv/scheduler/server/schedule"
 	"github.com/pingcap/errcode"
-	"github.com/pingcap/log"
 	"github.com/pkg/errors"
 	"go.uber.org/zap"
 )
@@ -279,11 +280,55 @@ func (c *RaftCluster) handleStoreHeartbeat(stats *schedulerpb.StoreStats) error 
 // processRegionHeartbeat updates the region information.
 func (c *RaftCluster) processRegionHeartbeat(region *core.RegionInfo) error {
 	// Your Code Here (3C).
+	// regionsInfo := c.core.Regions
+	// check stale heartbeat(must skip for the possibility of wrong)
 
+	// NOTE: return error if epoch nil
+	regionEpoch := region.GetRegionEpoch()
+	if regionEpoch == nil {
+		log.Infof("nil regionEpoch of region:%v", region.GetMeta())
+		return errors.Errorf("Region %v has no epoch", region)
+	}
+
+	// 1. Check whether there is a region with the same Id in local storage.
+	// If there is and at least one of the heartbeats’
+	// conf_ver and version is less than its, this heartbeat region is stale
+	// log.Infof("++++processRegionHeartbeat region.RegionEpoch:%v", region.GetMeta().RegionEpoch)
+	oldRegion := c.GetRegion(region.GetID())
+	if oldRegion != nil {
+		if util.IsEpochStale(regionEpoch, oldRegion.GetRegionEpoch()) {
+			// log.Infof("+stale regionEpoch with the same regionID: %v", region_local.GetRegionEpoch())
+			return ErrRegionIsStale(region.GetMeta(), oldRegion.GetMeta())
+		}
+	}
+	// 2. If there isn’t, scan all regions that overlap with it. The heartbeats’
+	// conf_ver and version should be greater or equal than all of them,
+	// or the region is stale.
+	overlapRegions := c.core.GetOverlaps(region)
+	// overlapRegions := c.ScanRegions(region.GetStartKey(), region.GetEndKey(), -1)
+	for _, overlapRegion := range overlapRegions {
+		log.Infof("oldRegion.RegionEpoch:%v", region.GetRegionEpoch())
+		log.Infof("overlap_region.RegionEpoch:%v", overlapRegion.GetRegionEpoch())
+		if util.IsEpochStale(regionEpoch, overlapRegion.GetRegionEpoch()) {
+			// log.Infof("+overlap regionEpoch with the same regionID: %v", overlap_region.GetRegionEpoch())
+			return ErrRegionIsStale(region.GetMeta(), overlapRegion.GetMeta())
+		}
+
+	}
+	// skip update You don’t need to find a strict sufficient and necessary condition.
+	// Redundant updates won’t affect correctness.
+
+	// update
+	// log.Infof("update for region.RegionEpoch%v", region.GetMeta().RegionEpoch)
+	c.core.PutRegion(region)
+	for storeId := range region.GetStoreIds() {
+		c.updateStoreStatusLocked(storeId)
+	}
 	return nil
 }
 
 func (c *RaftCluster) updateStoreStatusLocked(id uint64) {
+	// TODO leader counts in this store
 	leaderCount := c.core.GetStoreLeaderCount(id)
 	regionCount := c.core.GetStoreRegionCount(id)
 	pendingPeerCount := c.core.GetStorePendingPeerCount(id)
