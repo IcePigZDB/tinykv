@@ -79,12 +79,18 @@ func (d *storeWorker) onTick(tick StoreTick) {
 func (d *storeWorker) handleMsg(msg message.Msg) {
 	switch msg.Type {
 	case message.MsgTypeStoreRaftMessage:
+		// case 1: RaftstoreRouter.SendRaftMessage encount error: errPeerNotFound when
+		//         send MsgTypeRaftMessage
+		//         storeWorker.onRaftMessage send MsgTypeRaftMessage again and create a
+		//         peer if necessary
 		if err := d.onRaftMessage(msg.Data.(*rspb.RaftMessage)); err != nil {
 			log.Errorf("handle raft message failed storeID %d, %v", d.id, err)
 		}
 	case message.MsgTypeStoreTick:
+		// case 2: tick
 		d.onTick(msg.Data.(StoreTick))
 	case message.MsgTypeStoreStart:
+		// case 3: set ticks to start store worker
 		d.start(msg.Data.(*metapb.Store))
 	}
 }
@@ -152,6 +158,7 @@ func (d *storeWorker) checkMsg(msg *rspb.RaftMessage) (bool, error) {
 
 func (d *storeWorker) onRaftMessage(msg *rspb.RaftMessage) error {
 	regionID := msg.RegionId
+	// send MsgTypeRaftMessage to peer again
 	if err := d.ctx.router.send(regionID, message.Msg{Type: message.MsgTypeRaftMessage, Data: msg}); err == nil {
 		return nil
 	}
@@ -178,6 +185,7 @@ func (d *storeWorker) onRaftMessage(msg *rspb.RaftMessage) error {
 	if ok {
 		return nil
 	}
+	// create a peer if peer not exist
 	created, err := d.maybeCreatePeer(regionID, msg)
 	if err != nil {
 		return err
@@ -185,6 +193,7 @@ func (d *storeWorker) onRaftMessage(msg *rspb.RaftMessage) error {
 	if !created {
 		return nil
 	}
+	// finally send MsgTypeRaftMessage
 	_ = d.ctx.router.send(regionID, message.Msg{Type: message.MsgTypeRaftMessage, Data: msg})
 	return nil
 }

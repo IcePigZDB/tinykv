@@ -16,6 +16,7 @@ type PartitionFilter struct {
 	s2 []uint64
 }
 
+// Before return false to drop msg because peers in msg are partition
 func (f *PartitionFilter) Before(msg *rspb.RaftMessage) bool {
 	inS1 := false
 	inS2 := false

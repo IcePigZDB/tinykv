@@ -83,12 +83,13 @@ func (c *Cluster) Start() {
 		raftDB := engine_util.CreateDB(raftPath, true)
 		kvDB := engine_util.CreateDB(kvPath, false)
 		engine := engine_util.NewEngines(kvDB, raftDB, kvPath, raftPath)
+		// engines for every store
 		c.engines[storeID] = engine
 	}
 
 	regionEpoch := &metapb.RegionEpoch{
-		Version: raftstore.InitEpochVer,
-		ConfVer: raftstore.InitEpochConfVer,
+		Version: raftstore.InitEpochVer, // 1
+		ConfVer: raftstore.InitEpochConfVer, // 1
 	}
 	firstRegion := &metapb.Region{
 		Id:          1,
@@ -96,7 +97,7 @@ func (c *Cluster) Start() {
 		EndKey:      []byte{},
 		RegionEpoch: regionEpoch,
 	}
-
+	
 	for storeID, engine := range c.engines {
 		peer := NewPeer(storeID, storeID)
 		firstRegion.Peers = append(firstRegion.Peers, peer)
@@ -223,6 +224,7 @@ func (c *Cluster) CallCommandOnLeader(request *raft_cmdpb.RaftCmdRequest, timeou
 		request.Header.Peer = leader
 		log.Debugf("+++++ CallCommandOnLeader regionID:%d,leader:%d,requset.Header.Peer:%d",
 			regionID, leader, request.Header.Peer)
+		// call leader with command
 		resp, txn := c.CallCommand(request, 1*time.Second)
 		// log.Debugf("+++++ CallCommandOnLeader regionID:%d,leader:%d,requset.Header.Peer:%d,resp:%+v",
 		// regionID, leader, request.Header.Peer, resp)

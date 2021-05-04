@@ -100,29 +100,34 @@ func checkConcurrentAppends(t *testing.T, v string, counts []int) {
 }
 
 // repartition the servers periodically
-func partitioner(t *testing.T, cluster *Cluster, ch chan bool, done *int32, unreliable bool, electionTimeout time.Duration) {
+func partitioner(t *testing.T, cluster *Cluster, ch chan bool, done *int32, unreliable bool, partitions bool, electionTimeout time.Duration) {
 	defer func() { ch <- true }()
 	for atomic.LoadInt32(done) == 0 {
-		a := make([]int, cluster.count)
-		for i := 0; i < cluster.count; i++ {
-			a[i] = (rand.Int() % 2)
-		}
-		pa := make([][]uint64, 2)
-		for i := 0; i < 2; i++ {
-			pa[i] = make([]uint64, 0)
-			for j := 1; j <= cluster.count; j++ {
-				if a[j-1] == i {
-					pa[i] = append(pa[i], uint64(j))
+		// TODO PR#1 add partitions bool para
+		if partitions {
+			a := make([]int, cluster.count)
+			for i := 0; i < cluster.count; i++ {
+				a[i] = (rand.Int() % 2)
+			}
+			pa := make([][]uint64, 2)
+			for i := 0; i < 2; i++ {
+				pa[i] = make([]uint64, 0)
+				for j := 1; j <= cluster.count; j++ {
+					if a[j-1] == i {
+						pa[i] = append(pa[i], uint64(j))
+					}
 				}
 			}
+			cluster.ClearFilters()
+			log.Infof("partition: %v, %v", pa[0], pa[1])
+			cluster.AddFilter(&PartitionFilter{
+				s1: pa[0],
+				s2: pa[1],
+			})
 		}
-		cluster.ClearFilters()
-		log.Infof("partition: %v, %v", pa[0], pa[1])
-		cluster.AddFilter(&PartitionFilter{
-			s1: pa[0],
-			s2: pa[1],
-		})
+
 		if unreliable {
+			// 90% percent
 			cluster.AddFilter(&DropFilter{})
 		}
 		time.Sleep(electionTimeout + time.Duration(rand.Int63()%200)*time.Millisecond)
@@ -150,7 +155,7 @@ func confchanger(t *testing.T, cluster *Cluster, ch chan bool, done *int32) {
 // operations to set of servers for some period of time.  After the period is
 // over, test checks that all sequential values are present and in order for a
 // particular key and perform Delete to clean up.
-// - If unreliable is set, RPCs may fail.
+// - If unreliable is set, RPCs may fail. 90%
 // - If crash is set, the servers restart after the period is over.
 // - If partitions is set, the test repartitions the network concurrently between the servers.
 // - If maxraftlog is a positive number, the count of the persistent log for Raft shouldn't exceed 2*maxraftlog.
@@ -206,7 +211,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 	for i := 0; i < nclients; i++ {
 		clnts[i] = make(chan int, 1)
 	}
-	// excute one by one
+	// excute all case for three times
 	for i := 0; i < 3; i++ {
 		// log.Printf("Iteration %v\n", i)
 		log.Infof("Iteration %v\n", i)
@@ -240,21 +245,30 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 			}
 		})
 
-		if partitions {
+		// TODO PR#1 add partitions parm in partitioner
+		// enable cases:
+		//				  partitions    no partitions
+		//    unreliable       1                1
+		// no unreliable       1                1
+		if unreliable || partitions {
 			// Allow the clients to perform some operations without interruption
 			time.Sleep(300 * time.Millisecond)
-			go partitioner(t, cluster, ch_partitioner, &done_partitioner, unreliable, electionTimeout)
+			go partitioner(t, cluster, ch_partitioner, &done_partitioner, unreliable, partitions, electionTimeout)
 		}
+
 		if confchange {
 			// Allow the clients to perfrom some operations without interruption
 			time.Sleep(100 * time.Millisecond)
 			go confchanger(t, cluster, ch_confchange, &done_confchanger)
 		}
+		// stop go routine after 5 seconds
 		time.Sleep(5 * time.Second)
 		atomic.StoreInt32(&done_clients, 1)     // tell clients to quit
 		atomic.StoreInt32(&done_partitioner, 1) // tell partitioner to quit
 		atomic.StoreInt32(&done_confchanger, 1) // tell confchanger to quit
-		if partitions {
+
+		// TODO PR#1
+		if unreliable || partitions {
 			// log.Printf("wait for partitioner\n")
 			<-ch_partitioner
 			// reconnect network and submit a request. A client may
@@ -287,7 +301,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 		for cli := 0; cli < nclients; cli++ {
 			// log.Printf("read from clients %d\n", cli)
 			j := <-clnts[cli]
-
+			log.Infof("read from clinets %d j:%x", cli, j)
 			// if j < 10 {
 			// 	log.Printf("Warning: client %d managed to perform only %d put operations in 1 sec?\n", i, j)
 			// }
@@ -324,6 +338,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 					}
 					truncatedIdx := state.TruncatedState.Index
 					appliedIdx := state.AppliedIndex
+					// TODO why this formular?
 					if appliedIdx-truncatedIdx > 2*uint64(maxraftlog) {
 						t.Fatalf("logs were not trimmed (%v - %v > 2*%v)", appliedIdx, truncatedIdx, maxraftlog)
 					}
@@ -356,6 +371,7 @@ func TestConcurrent2B(t *testing.T) {
 }
 
 func TestUnreliable2B(t *testing.T) {
+	// TODO unreliable need work with partitions flag
 	// Test: unreliable net, many clients (2B) ...
 	GenericTest(t, "2B", 5, true, false, false, -1, false, false)
 }
@@ -371,6 +387,7 @@ func TestOnePartition2B(t *testing.T) {
 
 	region := cluster.GetRegion([]byte(""))
 	leader := cluster.LeaderOfRegion(region.GetId())
+
 	s1 := []uint64{leader.GetStoreId()}
 	s2 := []uint64{}
 	for _, p := range region.GetPeers() {
@@ -378,8 +395,10 @@ func TestOnePartition2B(t *testing.T) {
 			continue
 		}
 		if len(s1) < 3 {
+			// len 3 majority
 			s1 = append(s1, p.GetStoreId())
 		} else {
+			// len 2
 			s2 = append(s2, p.GetStoreId())
 		}
 	}
@@ -391,6 +410,7 @@ func TestOnePartition2B(t *testing.T) {
 	})
 	cluster.MustPut([]byte("k1"), []byte("v1"))
 	cluster.MustGet([]byte("k1"), []byte("v1"))
+	// s2 in minority and with partition
 	MustGetNone(cluster.engines[s2[0]], []byte("k1"))
 	MustGetNone(cluster.engines[s2[1]], []byte("k1"))
 	cluster.ClearFilters()
@@ -455,14 +475,15 @@ func TestOneSnapshot2C(t *testing.T) {
 	cluster := NewTestCluster(3, cfg)
 	cluster.Start()
 	defer cluster.Shutdown()
-
+	log.Infof("-----------1")
 	cf := engine_util.CfLock
 	cluster.MustPutCF(cf, []byte("k1"), []byte("v1"))
 	cluster.MustPutCF(cf, []byte("k2"), []byte("v2"))
-
+	log.Infof("-----------2")
 	MustGetCfEqual(cluster.engines[1], cf, []byte("k1"), []byte("v1"))
 	MustGetCfEqual(cluster.engines[1], cf, []byte("k2"), []byte("v2"))
 
+	log.Infof("-----------------3")
 	for _, engine := range cluster.engines {
 		state, err := meta.GetApplyState(engine.Kv, 1)
 		if err != nil {
@@ -474,6 +495,7 @@ func TestOneSnapshot2C(t *testing.T) {
 		}
 	}
 
+	log.Infof("-----------------4")
 	cluster.AddFilter(
 		&PartitionFilter{
 			s1: []uint64{1},
@@ -494,6 +516,7 @@ func TestOneSnapshot2C(t *testing.T) {
 	MustGetCfEqual(cluster.engines[1], cf, []byte("k1"), []byte("v1"))
 	MustGetCfEqual(cluster.engines[1], cf, []byte("k100"), []byte("v100"))
 	MustGetCfNone(cluster.engines[1], cf, []byte("k2"))
+	log.Infof("-----------------5")
 
 	cluster.StopServer(1)
 	cluster.StartServer(1)
@@ -539,11 +562,13 @@ func TestSnapshotUnreliableRecoverConcurrentPartition2C(t *testing.T) {
 
 func TestTransferLeader3B(t *testing.T) {
 	cfg := config.NewTestConfig()
+	// cluster with 1-5
 	cluster := NewTestCluster(5, cfg)
 	cluster.Start()
 	defer cluster.Shutdown()
 
 	regionID := cluster.GetRegion([]byte("")).GetId()
+	// a leader voted before begin TransferLeder
 	cluster.MustTransferLeader(regionID, NewPeer(1, 1))
 	cluster.MustTransferLeader(regionID, NewPeer(2, 2))
 	cluster.MustTransferLeader(regionID, NewPeer(3, 3))
@@ -556,21 +581,23 @@ func TestBasicConfChange3B(t *testing.T) {
 	cluster := NewTestCluster(5, cfg)
 	cluster.Start()
 	defer cluster.Shutdown()
+	// voted leader
 
 	cluster.MustTransferLeader(1, NewPeer(1, 1))
-	cluster.MustRemovePeer(1, NewPeer(2, 2))
+	cluster.MustRemovePeer(1, NewPeer(2, 2)) // regionId and peer to remove
 	cluster.MustRemovePeer(1, NewPeer(3, 3))
 	cluster.MustRemovePeer(1, NewPeer(4, 4))
-	cluster.MustRemovePeer(1, NewPeer(5, 5))
+	cluster.MustRemovePeer(1, NewPeer(5, 5)) // ConfVersion 5=1+4
 
 	// now region 1 only has peer: (1, 1)
 	cluster.MustPut([]byte("k1"), []byte("v1"))
 	MustGetNone(cluster.engines[2], []byte("k1"))
 
 	// add peer (2, 2) to region 1
-	cluster.MustAddPeer(1, NewPeer(2, 2))
+	cluster.MustAddPeer(1, NewPeer(2, 2)) // ConfVersion 6=5+1
 	cluster.MustPut([]byte("k2"), []byte("v2"))
 	cluster.MustGet([]byte("k2"), []byte("v2"))
+	// fetch from peer 2 's
 	MustGetEqual(cluster.engines[2], []byte("k1"), []byte("v1"))
 	MustGetEqual(cluster.engines[2], []byte("k2"), []byte("v2"))
 
@@ -581,8 +608,10 @@ func TestBasicConfChange3B(t *testing.T) {
 	MustGetNone(cluster.engines[5], []byte("k1"))
 
 	// add peer (3, 3) to region 1
-	cluster.MustAddPeer(1, NewPeer(3, 3))
-	cluster.MustRemovePeer(1, NewPeer(2, 2))
+	cluster.MustAddPeer(1, NewPeer(3, 3)) // ConfVersion 7=6+1
+	// log.Infof("+++++++++++++++++++++++++++++remove peer2")
+	cluster.MustRemovePeer(1, NewPeer(2, 2)) // ConfVersion 8=7+1
+	// log.Infof("+++++++++++++++++++++++++++++remove peer2 success")
 
 	cluster.MustPut([]byte("k3"), []byte("v3"))
 	cluster.MustGet([]byte("k3"), []byte("v3"))
@@ -594,7 +623,7 @@ func TestBasicConfChange3B(t *testing.T) {
 	MustGetNone(cluster.engines[2], []byte("k1"))
 	MustGetNone(cluster.engines[2], []byte("k2"))
 
-	cluster.MustAddPeer(1, NewPeer(2, 2))
+	cluster.MustAddPeer(1, NewPeer(2, 2)) // ConfVersion 9=8+1
 	MustGetEqual(cluster.engines[2], []byte("k1"), []byte("v1"))
 	MustGetEqual(cluster.engines[2], []byte("k2"), []byte("v2"))
 	MustGetEqual(cluster.engines[2], []byte("k3"), []byte("v3"))
@@ -608,8 +637,15 @@ func TestBasicConfChange3B(t *testing.T) {
 
 	cluster.MustPut([]byte("k4"), []byte("v4"))
 	MustGetEqual(cluster.engines[2], []byte("k1"), []byte("v1"))
+	// NOTE k1 could represent k2 k3
+	MustGetEqual(cluster.engines[2], []byte("k2"), []byte("v2"))
+	MustGetEqual(cluster.engines[2], []byte("k3"), []byte("v3"))
 	MustGetEqual(cluster.engines[2], []byte("k4"), []byte("v4"))
+
 	MustGetNone(cluster.engines[3], []byte("k1"))
+	// NOTE k1 could represent k2 k3
+	MustGetNone(cluster.engines[3], []byte("k2"))
+	MustGetNone(cluster.engines[3], []byte("k3"))
 	MustGetNone(cluster.engines[3], []byte("k4"))
 }
 
@@ -716,5 +752,5 @@ func TestSplitConfChangeSnapshotUnreliableRecover3B(t *testing.T) {
 
 func TestSplitConfChangeSnapshotUnreliableRecoverConcurrentPartition3B(t *testing.T) {
 	// Test: unreliable net, restarts, partitions, snapshots, conf change, many clients (3B) ...
-	GenericTest(t, "3B", 5, true, true, true, 100, true, true)
+GenericTest(t, "3B", 5, true, true, true, 100, true, true)
 }

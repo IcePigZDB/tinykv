@@ -66,8 +66,8 @@ type Store struct {
 
 func NewStore(store *metapb.Store) *Store {
 	return &Store{
-		store:                    *store,
-		heartbeatResponseHandler: nil,
+		store: *store,
+		// heartbeatResponseHandler: nil,
 	}
 }
 
@@ -256,17 +256,20 @@ func (m *MockSchedulerClient) RegionHeartbeat(req *schedulerpb.RegionHeartbeatRe
 	defer m.Unlock()
 
 	regionID := req.Region.GetId()
+	// update pendingPeers
 	for _, p := range req.Region.GetPeers() {
 		delete(m.pendingPeers, p.GetId())
 	}
 	for _, p := range req.GetPendingPeers() {
 		m.pendingPeers[p.GetId()] = p
 	}
+	// update leader from region
 	m.leaders[regionID] = req.Leader
-
+	// Version++ if region split or merge
 	if err := m.handleHeartbeatVersion(req.Region); err != nil {
 		return err
 	}
+	// ConfVersion++ if conf change
 	if err := m.handleHeartbeatConfVersion(req.Region); err != nil {
 		return err
 	}
@@ -279,6 +282,7 @@ func (m *MockSchedulerClient) RegionHeartbeat(req *schedulerpb.RegionHeartbeatRe
 	}
 	if op := m.operators[regionID]; op != nil {
 		if m.tryFinished(op, req.Region, req.Leader) {
+			// delete op if finish
 			delete(m.operators, regionID)
 		} else {
 			m.makeRegionHeartbeatResponse(op, resp)
@@ -287,6 +291,8 @@ func (m *MockSchedulerClient) RegionHeartbeat(req *schedulerpb.RegionHeartbeatRe
 	}
 
 	store := m.stores[req.Leader.GetStoreId()]
+	// func (r *SchedulerTaskHandler) onRegionHeartbeatResponse(resp *schedulerpb.RegionHeartbeatResponse) in scheduler_task.go
+	// propose admin request
 	store.heartbeatResponseHandler(resp)
 	return nil
 }
@@ -385,6 +391,7 @@ func (m *MockSchedulerClient) handleHeartbeatConfVersion(region *metapb.Region) 
 	return nil
 }
 
+// return true if finished
 func (m *MockSchedulerClient) tryFinished(op *Operator, region *metapb.Region, leader *metapb.Peer) bool {
 	switch op.Type {
 	case OperatorTypeAddPeer:
@@ -399,6 +406,7 @@ func (m *MockSchedulerClient) tryFinished(op *Operator, region *metapb.Region, l
 			// TinyKV rejects AddNode.
 			return false
 		} else {
+			// found means not finish
 			_, found := m.pendingPeers[add.peer.GetId()]
 			return !found
 		}
@@ -448,6 +456,7 @@ func (m *MockSchedulerClient) SetRegionHeartbeatResponseHandler(storeID uint64, 
 	m.Lock()
 	defer m.Unlock()
 	store := m.stores[storeID]
+	// HeartbeatResponseHandler
 	store.heartbeatResponseHandler = h
 }
 
@@ -517,7 +526,7 @@ func (m *MockSchedulerClient) TransferLeader(regionID uint64, peer *metapb.Peer)
 func (m *MockSchedulerClient) getRandomRegion() *metapb.Region {
 	m.RLock()
 	defer m.RUnlock()
-
+	// range keys in random order
 	for regionID := range m.leaders {
 		region, _, _ := m.getRegionByIDLocked(regionID)
 		return region

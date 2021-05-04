@@ -152,7 +152,7 @@ func (bs *Raftstore) loadPeers() ([]*peer, error) {
 				bs.clearStaleMeta(kvWB, raftWB, localState)
 				continue
 			}
-
+			// create peer here
 			peer, err := createPeer(storeID, ctx.cfg, ctx.regionTaskSender, ctx.engine, region)
 			if err != nil {
 				return err
@@ -227,6 +227,7 @@ func (bs *Raftstore) start(
 		return err
 	}
 	wg := new(sync.WaitGroup)
+	// 1. init workers
 	bs.workers = &workers{
 		splitCheckWorker: worker.NewWorker("split-check", wg),
 		regionWorker:     worker.NewWorker("snapshot-worker", wg),
@@ -234,6 +235,7 @@ func (bs *Raftstore) start(
 		schedulerWorker:  worker.NewWorker("scheduler-worker", wg),
 		wg:               wg,
 	}
+	// 2. save sender to GlobalContext
 	bs.ctx = &GlobalContext{
 		cfg:                  cfg,
 		engine:               engines,
@@ -249,11 +251,12 @@ func (bs *Raftstore) start(
 		schedulerClient:      schedulerClient,
 		tickDriverSender:     bs.tickDriver.newRegionCh,
 	}
+	// create peers for region
 	regionPeers, err := bs.loadPeers()
 	if err != nil {
 		return err
 	}
-
+	// register peers to router for msg transfer in the future
 	for _, peer := range regionPeers {
 		bs.router.register(peer)
 	}
@@ -282,10 +285,13 @@ func (bs *Raftstore) startWorkers(peers []*peer) {
 	}
 	engines := ctx.engine
 	cfg := ctx.cfg
+	// 3. start workers
+	// init TaskHandler with Start() and Hanle() called by worker.Start() below
 	workers.splitCheckWorker.Start(runner.NewSplitCheckHandler(engines.Kv, NewRaftstoreRouter(router), cfg))
 	workers.regionWorker.Start(runner.NewRegionTaskHandler(engines, ctx.snapMgr))
 	workers.raftLogGCWorker.Start(runner.NewRaftLogGCTaskHandler())
 	go bs.tickDriver.run()
+	// taskHandle: scheduler_task.go schedulerWorker: scheduler.go
 	workers.schedulerWorker.Start(runner.NewSchedulerTaskHandler(ctx.store.Id, ctx.schedulerClient, NewRaftstoreRouter(router)))
 }
 

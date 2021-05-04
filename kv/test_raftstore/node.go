@@ -69,7 +69,7 @@ func (t *MockTransport) ClearFilters() {
 func (t *MockTransport) Send(msg *raft_serverpb.RaftMessage) error {
 	t.RLock()
 	defer t.RUnlock()
-
+	// drop the msg if meet any filter
 	for _, filter := range t.filters {
 		if !filter.Before(msg) {
 			return errors.New(fmt.Sprintf("message %+v is dropped", msg))
@@ -150,7 +150,7 @@ func (c *NodeSimulator) RunStore(cfg *config.Config, engine *engine_util.Engines
 	// raftRouter:peerSender(w&r) storeSender(w)
 	raftRouter, raftSystem := raftstore.CreateRaftstore(cfg)
 	snapManager := snap.NewSnapManager(cfg.DBPath + "/snap")
-	// TODO Node may about PD
+	// wrap a Raftstore and schedulerClient
 	node := raftstore.NewNode(raftSystem, cfg, c.schedulerClient)
 
 	err := node.Start(ctx, engine, c.trans, snapManager)

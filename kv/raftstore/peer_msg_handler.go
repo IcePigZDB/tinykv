@@ -2,6 +2,7 @@ package raftstore
 
 import (
 	"fmt"
+	"reflect"
 	"time"
 
 	"github.com/Connor1996/badger/y"
@@ -65,6 +66,10 @@ func (d *peerMsgHandler) handleProposal(entry *eraftpb.Entry, handle func(*propo
 			} else {
 				handle(p)
 			}
+		}
+		// https://bbs.dscl.team/d/30057-tinykv2b-github
+		if p.index > entry.Index {
+			return
 		}
 		d.proposals = d.proposals[1:]
 	}
@@ -219,16 +224,21 @@ func (d *peerMsgHandler) processConfChange(entry *eraftpb.Entry, cc *eraftpb.Con
 		panic(err)
 	}
 	region := d.Region()
+
+	// log.Infof("++++epoch of region %v", region.RegionEpoch)
 	err = util.CheckRegionEpoch(msg, region, true)
 	if errEpochNotMatching, ok := err.(*util.ErrEpochNotMatch); ok {
 		d.handleProposal(entry, func(p *proposal) {
 			p.cb.Done(ErrResp(errEpochNotMatching))
 		})
+		// log.Infof("++++++++++fast return %v, d.region.RegionEpoch %v,msg.RegionEpoch%v",
+			// d.Tag, region.RegionEpoch, msg.Header.RegionEpoch)
 		return
 	}
 	switch cc.ChangeType {
 	case eraftpb.ConfChangeType_AddNode:
 		n := searchRegionPeer(region, cc.NodeId)
+		//not found
 		if n == len(region.Peers) {
 			peer := msg.AdminRequest.ChangePeer.Peer
 			region.Peers = append(region.Peers, peer)
@@ -241,11 +251,14 @@ func (d *peerMsgHandler) processConfChange(entry *eraftpb.Entry, cc *eraftpb.Con
 			d.insertPeerCache(peer)
 		}
 	case eraftpb.ConfChangeType_RemoveNode:
+		// log.Infof("+++processConfChange %v, cc.NodeId:%x d.Meta.Id:%x", d.Tag, cc.NodeId, d.Meta.Id)
 		if cc.NodeId == d.Meta.Id {
+			// log.Infof("+++processConfChange %v destroy itself", d.Tag)
 			d.destroyPeer()
 			return
 		}
 		n := searchRegionPeer(region, cc.NodeId)
+		// found
 		if n < len(region.Peers) {
 			region.Peers = append(region.Peers[:n], region.Peers[n+1:]...)
 			region.RegionEpoch.ConfVer++
@@ -276,6 +289,7 @@ func (d *peerMsgHandler) process(entry *eraftpb.Entry, wb *engine_util.WriteBatc
 	if entry.EntryType == eraftpb.EntryType_EntryConfChange {
 		cc := &eraftpb.ConfChange{}
 		err := cc.Unmarshal(entry.Data)
+		// log.Infof("+++process %v,cc%v", d.Tag, cc)
 		if err != nil {
 			panic(err)
 		}
@@ -310,19 +324,23 @@ func (d *peerMsgHandler) HandleRaftReady() {
 			panic(err)
 		}
 		if result != nil {
-			// 	if !reflect.DeepEqual(result.PrevRegion, result.Region) {
-			// 		d.peerStorage.SetRegion(result.Region)
-			// 		storeMeta := d.ctx.storeMeta
-			// 		storeMeta.Lock()
-			// 		storeMeta.regions[result.Region.Id] = result.Region
-			// 		storeMeta.regionRanges.Delete(&regionItem{region: result.PrevRegion})
-			// 		storeMeta.regionRanges.ReplaceOrInsert(&regionItem{region: result.Region})
-			// 		storeMeta.Unlock()
-			// 	}
+			// PrevRegion
+			if !reflect.DeepEqual(result.PrevRegion, result.Region) {
+				d.peerStorage.SetRegion(result.Region)
+				storeMeta := d.ctx.storeMeta
+				// storeMeta.Lock()
+				storeMeta.regions[result.Region.Id] = result.Region
+				storeMeta.regionRanges.Delete(&regionItem{region: result.PrevRegion})
+				storeMeta.regionRanges.ReplaceOrInsert(&regionItem{region: result.Region})
+				// storeMeta.Unlock()
+			}
 		}
+		// if len(rd.Messages) > 0 {
+		// 	log.Infof("++handleRaftReady %v rd.Peers:%v,rd.Messages %v %v", d.Tag, d.peer.RaftGroup.Raft.Prs, rd.Messages[0].MsgType, rd.Messages[0].Entries)
+		// }
 		d.Send(d.ctx.trans, rd.Messages)
 		if len(rd.CommittedEntries) > 0 {
-			// oldProposals := d.proposals
+			oldProposals := d.proposals
 			kvWB := new(engine_util.WriteBatch)
 			for _, entry := range rd.CommittedEntries {
 				kvWB = d.process(&entry, kvWB)
@@ -333,11 +351,11 @@ func (d *peerMsgHandler) HandleRaftReady() {
 			d.peerStorage.applyState.AppliedIndex = rd.CommittedEntries[len(rd.CommittedEntries)-1].Index
 			kvWB.SetMeta(meta.ApplyStateKey(d.regionId), d.peerStorage.applyState)
 			kvWB.WriteToDB(d.peerStorage.Engines.Kv)
-			// if len(oldProposals) > len(d.proposals) {
-			// 	proposals := make([]*proposal, len(d.proposals))
-			// 	copy(proposals, d.proposals)
-			// 	d.proposals = proposals
-			// }
+			if len(oldProposals) > len(d.proposals) {
+				proposals := make([]*proposal, len(d.proposals))
+				copy(proposals, d.proposals)
+				d.proposals = proposals
+			}
 		}
 		d.RaftGroup.Advance(rd)
 	}
@@ -416,9 +434,11 @@ func (d *peerMsgHandler) proposeAdminRequest(msg *raft_cmdpb.RaftCmdRequest, cb 
 		if err != nil {
 			panic(err)
 		}
+		// ChangeType add or remove
 		cc := eraftpb.ConfChange{ChangeType: req.ChangePeer.ChangeType, NodeId: req.ChangePeer.Peer.Id, Context: context}
 		p := &proposal{index: d.nextProposalIndex(), term: d.Term(), cb: cb}
 		d.proposals = append(d.proposals, p)
+		// log.Infof("+++proposeAdminRequest %v r.Prs %s Confchange %s", d.Tag, d.peer.RaftGroup.Raft.Prs, cc)
 		d.RaftGroup.ProposeConfChange(cc)
 	case raft_cmdpb.AdminCmdType_CompactLog:
 		data, err := msg.Marshal()
@@ -453,6 +473,8 @@ func (d *peerMsgHandler) proposeAdminRequest(msg *raft_cmdpb.RaftCmdRequest, cb 
 
 func (d *peerMsgHandler) proposeRequest(msg *raft_cmdpb.RaftCmdRequest, cb *message.Callback) {
 	key := getRequestKey(msg.Requests[0])
+	log.Infof("++proposeRequest %v,msg%v,", d.Tag, msg)
+	// log.Infof("++ %v", d.RaftGroup.Raft.RaftLog.GetEntries())
 	if key != nil {
 		err := util.CheckKeyInRegion(key, d.Region())
 		if err != nil {
@@ -469,12 +491,28 @@ func (d *peerMsgHandler) proposeRequest(msg *raft_cmdpb.RaftCmdRequest, cb *mess
 	d.RaftGroup.Propose(data)
 }
 
+// https://bbs.dscl.team/d/30057-tinykv2b-github
+func (d *peerMsgHandler) clearOldProposals() {
+	nextIdx := d.nextProposalIndex()
+	for i := len(d.proposals) - 1; i > 0; i-- {
+		if d.proposals[i].index < nextIdx {
+			// [0,i+1)
+			d.proposals = d.proposals[:i+1]
+			break
+		}
+		log.Infof("++++clearOldProposals clear proposal:%d", i)
+	}
+}
+
 func (d *peerMsgHandler) proposeRaftCommand(msg *raft_cmdpb.RaftCmdRequest, cb *message.Callback) {
 	err := d.preProposeRaftCommand(msg)
 	if err != nil {
 		cb.Done(ErrResp(err))
 		return
 	}
+
+	d.clearOldProposals()
+
 	// Your Code Here (2B).
 	if msg.AdminRequest != nil {
 		d.proposeAdminRequest(msg, cb)
@@ -566,6 +604,7 @@ func (d *peerMsgHandler) onRaftMsg(msg *rspb.RaftMessage) error {
 	if err != nil {
 		return err
 	}
+	// send heartbeat to scheduler worker if any new peer catch up with leader's logs
 	if d.AnyNewPeerCatchUp(msg.FromPeer.Id) {
 		d.HeartbeatScheduler(d.ctx.schedulerTaskSender)
 	}

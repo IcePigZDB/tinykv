@@ -371,7 +371,9 @@ func (p *peer) sendRaftMessage(msg eraftpb.Message, trans Transport) error {
 		return fmt.Errorf("failed to lookup recipient peer %v in region %v", msg.To, p.regionId)
 	}
 	log.Debugf("%v, send raft msg %v from %v to %v", p.Tag, msg.MsgType, fromPeer, toPeer)
-
+	// if msg.MsgType == 3 || msg.MsgType == 4 {
+	// 	log.Infof("%v, send raft msg %v from %v to %v with entries %v index %v commit %v", p.Tag, msg.MsgType, fromPeer, toPeer, msg.Entries, msg.Index, msg.Commit)
+	// }
 	sendMsg.FromPeer = &fromPeer
 	sendMsg.ToPeer = toPeer
 
