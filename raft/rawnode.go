@@ -85,7 +85,7 @@ func NewRawNode(config *Config) (*RawNode, error) {
 	rn := &RawNode{
 		Raft:       r,
 		prevSoftSt: r.softState(),
-		prevHadrSt: r.hadrState(),
+		prevHadrSt: r.hardState(),
 	}
 	return rn, nil
 }
@@ -162,18 +162,23 @@ func (rn *RawNode) Ready() Ready {
 		Messages:         r.msgs,
 	}
 	softSt := r.softState()
-	hadrSt := r.hadrState()
+	hadrSt := r.hardState()
 	if !softSt.equal(rn.prevSoftSt) {
 		rn.prevSoftSt = softSt
 		rd.SoftState = softSt
 	}
 	if !isHardStateEqual(hadrSt, rn.prevHadrSt) {
-		// TODO why not
+		// TODO why not, process back
 		// rn.prevHadrSt = hadrSt
 		rd.HardState = hadrSt
 	}
 	r.msgs = make([]pb.Message, 0)
-	// TODO snapshot
+
+	// snapshot
+	if !IsEmptySnap(r.RaftLog.pendingSnapshot) {
+		rd.Snapshot = *r.RaftLog.pendingSnapshot
+		r.RaftLog.pendingSnapshot = nil
+	}
 	return rd
 }
 
@@ -184,7 +189,7 @@ func (rn *RawNode) HasReady() bool {
 	if !r.softState().equal(rn.prevSoftSt) {
 		return true
 	}
-	if hardSt := r.hadrState(); !IsEmptyHardState(hardSt) && !isHardStateEqual(hardSt, rn.prevHadrSt) {
+	if hardSt := r.hardState(); !IsEmptyHardState(hardSt) && !isHardStateEqual(hardSt, rn.prevHadrSt) {
 		return true
 	}
 	if len(r.RaftLog.unstableEntries()) > 0 ||
@@ -192,7 +197,10 @@ func (rn *RawNode) HasReady() bool {
 		len(r.msgs) > 0 {
 		return true
 	}
-	// TODO snapshot
+	// snapshot
+	if !IsEmptySnap(r.RaftLog.pendingSnapshot) {
+		return true
+	}
 	return false
 }
 
@@ -209,6 +217,7 @@ func (rn *RawNode) Advance(rd Ready) {
 	if len(rd.CommittedEntries) > 0 {
 		rn.Raft.RaftLog.applied = rd.CommittedEntries[len(rd.CommittedEntries)-1].Index
 	}
+	rn.Raft.RaftLog.maybeCompact()
 }
 
 // GetProgress return the the Progress of this node and its peers, if this

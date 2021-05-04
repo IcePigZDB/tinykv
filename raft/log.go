@@ -15,8 +15,7 @@
 package raft
 
 import (
-	"log"
-
+	"github.com/pingcap-incubator/tinykv/log"
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
 
@@ -67,6 +66,7 @@ func newLog(storage Storage) *RaftLog {
 	if err != nil {
 		log.Panic(err)
 	}
+	// log.Infof("+++++newLog lo:%d,hi:%d,", lo, hi)
 	return &RaftLog{
 		storage:    storage,
 		entries:    entries,
@@ -85,10 +85,11 @@ func (l *RaftLog) maybeCompact() {
 	first, _ := l.storage.FirstIndex()
 	if first > l.FirstIndex {
 		if len(l.entries) > 0 {
-			entries := l.entries[l.toSliceIndex(first):]
-			l.entries = make([]pb.Entry, len(entries))
-			copy(l.entries, entries)
+			log.Infof("+++maybeCompact turncat first:%d, l.entries.firt:%d, l.FirstIndex:%d,len(l.entries):%d",
+				first, l.entries[len(l.entries)-1].Index, l.FirstIndex, len(l.entries))
+			l.entries = l.entries[l.toSliceIndex(first):]
 		}
+		l.FirstIndex = first
 	}
 }
 
@@ -131,10 +132,17 @@ func (l *RaftLog) LastIndex() uint64 {
 	return max(idx, i)
 }
 
-// Term return the term of the entry in the given index
+// Term return the term of the entry in the given indexG
 func (l *RaftLog) Term(i uint64) (uint64, error) {
 	// Your Code Here (2A).
 	// return are the same
+
+	// if len(l.entries) > 0 {
+	// 	log.Infof("first:%d", l.entries[len(l.entries)-1].Index)
+	// }
+	// first, _ := l.storage.FirstIndex()
+	// log.Infof("i:%d, FirstIndex:%d,storage FirstIndex:%d,len(l.entries):%d", i, l.FirstIndex, first, len(l.entries))
+
 	if len(l.entries) > 0 && i >= l.FirstIndex {
 		return l.entries[i-l.FirstIndex].Term, nil
 	}
@@ -173,4 +181,8 @@ func (l *RaftLog) commitTo(tocommit uint64) {
 		}
 		l.committed = tocommit
 	}
+}
+
+func (l *RaftLog) GetEntries() []pb.Entry {
+	return l.entries
 }

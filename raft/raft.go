@@ -20,6 +20,7 @@ import (
 	"sort"
 
 	"github.com/pingcap-incubator/tinykv/log"
+	"github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
 
@@ -190,7 +191,7 @@ func newRaft(c *Config) *Raft {
 		// PendingConfIndex: uint64,
 	}
 	lastIdx := r.RaftLog.LastIndex()
-	hadrState, confStat, _ := c.Storage.InitialState()
+	hardState, confStat, _ := c.Storage.InitialState()
 	if c.peers == nil {
 		c.peers = confStat.Nodes
 		// c.peers = c.Storage.confStat.Nodes
@@ -204,14 +205,14 @@ func newRaft(c *Config) *Raft {
 	}
 
 	r.becomeFollower(0, None)
-	r.Term, r.Vote, r.RaftLog.committed = hadrState.Term, hadrState.Vote, hadrState.Commit
+	r.Term, r.Vote, r.RaftLog.committed = hardState.Term, hardState.Vote, hardState.Commit
 	return r
 }
 func (r *Raft) hasLeader() bool { return r.Lead != None }
 
 func (r *Raft) softState() *SoftState { return &SoftState{Lead: r.Lead, RaftState: r.State} }
 
-func (r *Raft) hadrState() pb.HardState {
+func (r *Raft) hardState() pb.HardState {
 	return pb.HardState{
 		Term:   r.Term,
 		Vote:   r.Vote,
@@ -239,7 +240,15 @@ func (r *Raft) sendSnapshot(to uint64) {
 // current commit index to the given peer. Returns true if a message was sent.
 func (r *Raft) sendAppend(to uint64) bool {
 	// Your Code Here (2A).
+	// shortcut for newly add peer with empty entries
+	if r.Prs[to].Match == 0 && r.Prs[to].Next == 0 {
+		log.Infof("%x sendSanpshot to %x", r.id, to)
+		r.sendSnapshot(to)
+		return false
+	}
+
 	prevIdx := r.Prs[to].Next - 1
+	// log.Infof("++sendAppend %x, r.Prs %v", r.id, r.Prs)
 	prevLogTerm, err := r.RaftLog.Term(prevIdx)
 	if err != nil {
 		if err == ErrCompacted {
@@ -340,6 +349,7 @@ func (r *Raft) tick() {
 	case StateCandidate:
 		r.tickElection()
 	case StateLeader:
+		// TODO tick transferee
 		r.tickHeartbeat()
 	}
 }
@@ -364,8 +374,8 @@ func (r *Raft) resetTimer() {
 	r.electionElapsed = 0
 	r.heartbeatElapsed = 0
 	r.randomElectionTimeout = r.electionTimeout + rand.Intn(r.electionTimeout)
-	r.votes = make(map[uint64]bool)
-	r.Lead = None
+	// r.votes = make(map[uint64]bool)
+	// r.Lead = None
 }
 
 // candidate 2 follower
@@ -374,6 +384,7 @@ func (r *Raft) resetTimer() {
 func (r *Raft) becomeFollower(term uint64, lead uint64) {
 	// Your Code Here (2A).
 	r.resetTimer()
+	r.leadTransferee = None
 	r.State = StateFollower
 	r.Term = term
 	r.Lead = lead
@@ -411,7 +422,7 @@ func (r *Raft) becomeLeader() {
 	// ** append empty entry
 	r.RaftLog.entries = append(r.RaftLog.entries, pb.Entry{Term: r.Term, Index: lastIdx + 1})
 	r.bcastAppend()
-	log.Debugf("++++ becomLeader: %d", r.id)
+	log.Infof("++++ becomLeader: %d", r.id)
 	if len(r.Prs) == 1 {
 		r.RaftLog.committed = r.Prs[r.id].Match
 	}
@@ -423,6 +434,7 @@ func (r *Raft) Step(m pb.Message) error {
 	// Your Code Here (2A).
 	// log.Info("++++ raftID:%d,%s,%s", r.id, r.State, m.MsgType)
 	if m.Term > r.Term {
+		// NOTE put this line into becomeFollower
 		// r.leadTransferee = None
 		r.becomeFollower(m.Term, None)
 	}
@@ -450,12 +462,20 @@ func (r *Raft) stepFollower(m pb.Message) {
 	case pb.MessageType_MsgRequestVote:
 		r.handleRequestVote(m)
 	case pb.MessageType_MsgRequestVoteResponse:
-		r.handleRequestVoteResponse(m)
+		// r.handleRequestVoteResponse(m)
 	case pb.MessageType_MsgSnapshot:
 		r.handleSnapshot(m)
 	case pb.MessageType_MsgHeartbeat:
 		r.handleHeartbeat(m)
 	case pb.MessageType_MsgHeartbeatResponse:
+	case pb.MessageType_MsgTransferLeader:
+		r.handleTransferLeaderNotLeader(m)
+	case pb.MessageType_MsgTimeoutNow:
+		if _, ok := r.Prs[r.id]; !ok {
+			log.Infof("%x not in r.Prs, do not do Election after MsgTimeoutNow", r.id)
+			return
+		}
+		r.doElection()
 	}
 }
 
@@ -478,6 +498,11 @@ func (r *Raft) stepCandidate(m pb.Message) {
 	case pb.MessageType_MsgHeartbeat:
 		r.handleHeartbeat(m)
 	case pb.MessageType_MsgHeartbeatResponse:
+	case pb.MessageType_MsgTransferLeader:
+		r.handleTransferLeaderNotLeader(m)
+	case pb.MessageType_MsgTimeoutNow:
+		log.Infof("%x [term %d state %v] ignored MsgTimeoutNow from %x",
+			r.id, r.Term, r.State, m.From)
 	}
 }
 
@@ -490,7 +515,9 @@ func (r *Raft) stepLeader(m pb.Message) {
 		r.appendEntries(m.Entries)
 	case pb.MessageType_MsgAppend:
 		// may be leader need not this
-		r.handleAppendEntries(m)
+		if r.leadTransferee == None {
+			r.handleAppendEntries(m)
+		}
 	case pb.MessageType_MsgAppendResponse:
 		r.handleAppendEntriesResponse(m)
 	case pb.MessageType_MsgRequestVote:
@@ -507,10 +534,15 @@ func (r *Raft) stepLeader(m pb.Message) {
 		if r.Prs[m.From].Match < r.RaftLog.LastIndex() {
 			r.sendAppend(m.From)
 		}
+	case pb.MessageType_MsgTransferLeader:
+		r.handleTransferLeaderLeader(m)
+	case pb.MessageType_MsgTimeoutNow:
+
 	}
 }
 
 func (r *Raft) doElection() {
+
 	r.becomeCandidate()
 	if len(r.Prs) == 1 {
 		r.becomeLeader()
@@ -593,6 +625,16 @@ func (r *Raft) appendEntries(entries []*pb.Entry) {
 	for i, entry := range entries {
 		entry.Term = r.Term
 		entry.Index = lastIdx + uint64(i) + 1
+		if entry.EntryType == pb.EntryType_EntryConfChange {
+			if r.PendingConfIndex != None {
+				// pass entry if PendingConfIndex
+				continue
+			}
+			cc := &eraftpb.ConfChange{}
+			cc.Unmarshal(entry.Data)
+			log.Infof("++++appendEntries ConfChange %v data%v", r.id, cc)
+			r.PendingConfIndex = entry.Index
+		}
 		r.RaftLog.entries = append(r.RaftLog.entries, *entry)
 	}
 	// reflesh leader Match & Next
@@ -623,7 +665,8 @@ func (r *Raft) handleAppendEntries(m pb.Message) {
 		r.sendAppendResponse(m.From, true, None, None)
 		return
 	}
-	// 2. Replay false if log doesn't contain an entry at prevLogIndex whose term matches prevLogTerm
+	// 2. Replay false if log doesn't contain an entry at prevLogIndex
+	// whose term matches prevLogTerm
 	if m.Index > lastIdx {
 		// need from lastIdx+1
 		r.sendAppendResponse(m.From, true, None, lastIdx+1)
@@ -655,7 +698,8 @@ func (r *Raft) handleAppendEntries(m pb.Message) {
 			if err != nil {
 				panic(err)
 			}
-			// 3. If an existing entry conflicts with a new one (same index but different terms),
+			// 3. If an existing entry conflicts with a new one
+			// (same index but different terms),
 			// delete the existing entry and all that follow it
 			if logTerm != entry.Term {
 				sliceIdx := l.toSliceIndex(entry.Index)
@@ -675,7 +719,8 @@ func (r *Raft) handleAppendEntries(m pb.Message) {
 			break
 		}
 	}
-	// If leaderCommit > commitIndex,set commitIndex = min(leaderCommit,index of last new entry)
+	// If leaderCommit > commitIndex,set commitIndex =
+	// min(leaderCommit,index of last new entry)
 	if m.Commit > l.committed {
 		l.committed = min(m.Commit, m.Index+uint64(len(m.Entries)))
 	}
@@ -711,7 +756,10 @@ func (r *Raft) handleAppendEntriesResponse(m pb.Message) {
 		r.leaderCommit()
 		//TODO leaderTransferee
 	}
-
+	if m.From == r.leadTransferee && r.Prs[m.From].Match == r.RaftLog.LastIndex() {
+		r.sendTimeoutNow(r.leadTransferee)
+		log.Infof("++handleAppendEntriesResponse %x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log", r.id, r.leadTransferee, r.leadTransferee)
+	}
 }
 
 func (r *Raft) leaderCommit() {
@@ -771,7 +819,7 @@ func (r *Raft) handleSnapshot(m pb.Message) {
 	if len(r.RaftLog.entries) > 0 {
 		r.RaftLog.entries = nil
 	}
-	//
+	// update RaftLog state
 	r.RaftLog.FirstIndex = first
 	r.RaftLog.applied = meta.Index
 	r.RaftLog.committed = meta.Index
@@ -784,12 +832,74 @@ func (r *Raft) handleSnapshot(m pb.Message) {
 	r.sendAppendResponse(m.From, false, None, r.RaftLog.LastIndex())
 }
 
+func (r *Raft) handleTransferLeaderNotLeader(m pb.Message) {
+	if r.Lead == None {
+		log.Infof("%x no leader at term %d; dropping leader transfer msg", r.id, r.Term)
+		return
+	}
+	m.To = r.Lead
+	r.msgs = append(r.msgs, m)
+}
+
+func (r *Raft) sendTimeoutNow(to uint64) {
+	msg := pb.Message{From: r.id, To: to, MsgType: pb.MessageType_MsgTimeoutNow}
+	r.msgs = append(r.msgs, msg)
+}
+
+func (r *Raft) abortLeaderTransfer() {
+	r.leadTransferee = None
+}
+
+func (r *Raft) handleTransferLeaderLeader(m pb.Message) {
+	if r.leadTransferee != None {
+		if r.leadTransferee == m.From {
+			log.Debugf("++handleTransferLeaderLeader%x [term %d] transfer leadership to %x is in progress, ignores request to same node %x",
+				r.id, r.Term, r.leadTransferee, m.From)
+			return
+		}
+		// new Transfer stop current leaderTransferee
+		r.abortLeaderTransfer()
+	}
+	// check self transfer
+	if m.From == r.id {
+		log.Debugf("++handleTransferLeaderLeader %x is already leader. Ignored transferring leadership to self", r.id)
+		return
+	}
+	// check non exist transfer
+	if _, ok := r.Prs[m.From]; !ok {
+		log.Infof("%x is not in peer not", m.From)
+		return
+	}
+
+	log.Infof("++handleTransferLeaderLeader %x [term %d] starts to transfer leadership from leader %x to %x", r.id, r.Term, r.Lead, m.From)
+	r.leadTransferee = m.From
+	// TODO can i use resettimer()? no~
+	// r.electionElapsed = 0
+	r.resetTimer()
+	if r.Prs[m.From].Match == r.RaftLog.LastIndex() {
+		r.sendTimeoutNow(r.leadTransferee)
+		log.Infof("++handleTransferLeaderLeader %x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log", r.id, r.leadTransferee, r.leadTransferee)
+	} else {
+		r.sendAppend(r.leadTransferee)
+	}
+}
+
 // addNode add a new node to raft group
 func (r *Raft) addNode(id uint64) {
 	// Your Code Here (3A).
+	r.Prs[id] = &Progress{Next: 0}
+	r.PendingConfIndex = None
 }
 
 // removeNode remove a node from raft group
 func (r *Raft) removeNode(id uint64) {
 	// Your Code Here (3A).
+	_, ok := r.Prs[id]
+	if ok {
+		delete(r.Prs, id)
+		if r.State == StateLeader {
+			r.leaderCommit()
+		}
+	}
+	r.PendingConfIndex = None
 }

@@ -1438,6 +1438,7 @@ func checkLeaderTransferState(t *testing.T, r *Raft, state StateType, lead uint6
 // (previously, if the node also got votes, it would panic as it
 // transitioned to StateLeader)
 func TestTransferNonMember3A(t *testing.T) {
+	// 1 not in r.Prs of itself
 	r := newTestRaft(1, []uint64{2, 3, 4}, 5, 1, NewMemoryStorage())
 	r.Step(pb.Message{From: 2, To: 1, MsgType: pb.MessageType_MsgTimeoutNow, Term: r.Term})
 
