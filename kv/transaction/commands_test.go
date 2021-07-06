@@ -14,6 +14,7 @@ import (
 	"github.com/pingcap-incubator/tinykv/kv/storage"
 	"github.com/pingcap-incubator/tinykv/kv/transaction/mvcc"
 	"github.com/pingcap-incubator/tinykv/kv/util/engine_util"
+	"github.com/pingcap-incubator/tinykv/log"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/kvrpcpb"
 	"github.com/stretchr/testify/assert"
 )
@@ -90,7 +91,7 @@ func (builder *testBuilder) runRequests(reqs ...interface{}) []interface{} {
 	for _, req := range reqs {
 		reqName := fmt.Sprintf("%v", reflect.TypeOf(req))
 		reqName = strings.TrimPrefix(strings.TrimSuffix(reqName, "Request"), "*kvrpcpb.")
-		fnName := "Kv" + reqName
+		fnName := "Kv" + reqName // KvGet,KvPrewrite,KvCommit,KvScan...
 		serverVal := reflect.ValueOf(builder.server)
 		fn := serverVal.MethodByName(fnName)
 		ctxtVal := reflect.ValueOf(context.Background())
@@ -106,7 +107,7 @@ func (builder *testBuilder) runRequests(reqs ...interface{}) []interface{} {
 
 // runOneCmd is like runCommands but only runs a single command.
 func (builder *testBuilder) runOneRequest(req interface{}) interface{} {
-	return builder.runRequests(req)[0]
+return builder.runRequests(req)[0]
 }
 
 func (builder *testBuilder) nextTs() uint64 {
@@ -126,6 +127,7 @@ func (builder *testBuilder) assert(kvs []kv) {
 		ts := kv.ts
 		if ts == 0 {
 			ts = builder.prevTs
+			log.Infof("ts:%d", ts)
 		}
 		switch kv.cf {
 		case engine_util.CfDefault:
@@ -145,6 +147,7 @@ func (builder *testBuilder) assert(kvs []kv) {
 
 // assertLen asserts the size of one of the column families.
 func (builder *testBuilder) assertLen(cf string, size int) {
+	log.Infof("1:%d,2:%d", size, builder.mem.Len(cf))
 	assert.Equal(builder.t, size, builder.mem.Len(cf))
 }
 

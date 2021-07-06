@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/pingcap-incubator/tinykv/kv/util/engine_util"
+	"github.com/pingcap-incubator/tinykv/log"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/kvrpcpb"
 	"github.com/stretchr/testify/assert"
 )
@@ -23,6 +24,7 @@ func TestEmptyRollback4C(t *testing.T) {
 // TestRollback4C tests a successful rollback.
 func TestRollback4C(t *testing.T) {
 	builder := newBuilder(t)
+	// ts:100
 	cmd := builder.rollbackRequest([]byte{3})
 
 	builder.init([]kv{
@@ -36,6 +38,7 @@ func TestRollback4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(0, 0, 1)
 	builder.assert([]kv{
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, builder.ts()}},
 	})
 }
@@ -57,6 +60,7 @@ func TestRollbackDuplicateKeys4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(0, 0, 2)
 	builder.assert([]kv{
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, builder.ts()}},
 		{cf: engine_util.CfWrite, key: []byte{15}, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, builder.ts()}},
 	})
@@ -72,6 +76,7 @@ func TestRollbackMissingPrewrite4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(0, 0, 1)
 	builder.assert([]kv{
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, builder.ts()}},
 	})
 }
@@ -91,7 +96,9 @@ func TestRollbackCommitted4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(1, 0, 1)
 	builder.assert([]kv{
+		// value
 		{cf: engine_util.CfDefault, key: []byte{3}},
+		// WriteKindPut 1
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: 110},
 	})
 }
@@ -102,6 +109,7 @@ func TestRollbackDuplicate4C(t *testing.T) {
 	cmd := builder.rollbackRequest([]byte{3})
 
 	builder.init([]kv{
+		// rollback Write
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: 100, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, builder.ts()}},
 	})
 	resp := builder.runOneRequest(cmd).(*kvrpcpb.BatchRollbackResponse)
@@ -110,6 +118,7 @@ func TestRollbackDuplicate4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(0, 0, 1)
 	builder.assert([]kv{
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: 100},
 	})
 }
@@ -117,6 +126,7 @@ func TestRollbackDuplicate4C(t *testing.T) {
 // TestRollbackOtherTxn4C tests trying to roll back the wrong transaction.
 func TestRollbackOtherTxn4C(t *testing.T) {
 	builder := newBuilder(t)
+	// ts 100
 	cmd := builder.rollbackRequest([]byte{3})
 
 	builder.init([]kv{
@@ -131,6 +141,7 @@ func TestRollbackOtherTxn4C(t *testing.T) {
 	builder.assert([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 80},
 		{cf: engine_util.CfLock, key: []byte{3}},
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: 100, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, builder.ts()}},
 	})
 }
@@ -138,6 +149,8 @@ func TestRollbackOtherTxn4C(t *testing.T) {
 // TestCheckTxnStatusTtlExpired4C checks that if there is a lock and its ttl has expired, then it is rolled back.
 func TestCheckTxnStatusTtlExpired4C(t *testing.T) {
 	builder := newBuilder(t)
+	// ts 100
+	// TODO what is the difference of LockTS and currentTS?
 	cmd := builder.checkTxnStatusRequest([]byte{3})
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: cmd.LockTs, value: []byte{42}},
@@ -178,9 +191,11 @@ func TestCheckTxnStatusRolledBack4C(t *testing.T) {
 	cmd := builder.checkTxnStatusRequest([]byte{3})
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: cmd.LockTs, value: []byte{42}},
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: cmd.LockTs, value: []byte{3, 0, 0, 5, 0, 0, 0, 0, builder.ts()}},
 		{cf: engine_util.CfLock, key: []byte{3}, value: []byte{3, 1, 0, 0, 8, 0, 0, 0, 0, builder.ts(), 0, 0, 0, 0, 0, 0, 0, 8}},
 	})
+	log.Infof("cmd.LockTS%d,builder.ts()%d", cmd.LockTs, builder.ts())
 	resp := builder.runOneRequest(cmd).(*kvrpcpb.CheckTxnStatusResponse)
 
 	assert.Nil(t, resp.RegionError)
@@ -188,6 +203,7 @@ func TestCheckTxnStatusRolledBack4C(t *testing.T) {
 	assert.Equal(t, uint64(0), resp.CommitVersion)
 	builder.assertLens(1, 1, 1)
 	builder.assert([]kv{
+		// WriteKindRollback 3
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: cmd.LockTs},
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: cmd.LockTs},
 		{cf: engine_util.CfLock, key: []byte{3}},
@@ -244,10 +260,12 @@ func TestResolveCommit4C(t *testing.T) {
 	builder := newBuilder(t)
 	cmd := resolveRequest(100, 120)
 	builder.init([]kv{
+		// ts 100 to commit
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100, value: []byte{42}},
 		{cf: engine_util.CfLock, key: []byte{3}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0}},
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100, value: []byte{43}},
 		{cf: engine_util.CfLock, key: []byte{7}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0}},
+		// ts 110 leave alone
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110, value: []byte{44}},
 		{cf: engine_util.CfLock, key: []byte{200}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
@@ -257,10 +275,12 @@ func TestResolveCommit4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(3, 1, 2)
 	builder.assert([]kv{
+		// ts 100 to commit
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100},
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: 120, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100}},
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100},
 		{cf: engine_util.CfWrite, key: []byte{7}, ts: 120, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100}},
+		// ts 110 leave alone
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110},
 		{cf: engine_util.CfLock, key: []byte{200}},
 	})
@@ -271,10 +291,12 @@ func TestResolveRollback4C(t *testing.T) {
 	builder := newBuilder(t)
 	cmd := resolveRequest(100, 0)
 	builder.init([]kv{
+		// ts 100
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100, value: []byte{42}},
 		{cf: engine_util.CfLock, key: []byte{3}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0}},
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100, value: []byte{43}},
 		{cf: engine_util.CfLock, key: []byte{7}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100, 0, 0, 0, 0, 0, 0, 0, 0}},
+		// ts 110 leave alone
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110, value: []byte{44}},
 		{cf: engine_util.CfLock, key: []byte{200}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
@@ -284,8 +306,10 @@ func TestResolveRollback4C(t *testing.T) {
 	assert.Nil(t, resp.RegionError)
 	builder.assertLens(1, 1, 2)
 	builder.assert([]kv{
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{3}, ts: 100, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, 100}},
 		{cf: engine_util.CfWrite, key: []byte{7}, ts: 100, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, 100}},
+		// ts 110 leave alone
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110},
 		{cf: engine_util.CfLock, key: []byte{200}},
 	})
@@ -298,8 +322,11 @@ func TestResolveCommitWritten4C(t *testing.T) {
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100, value: []byte{42}},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 120, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100}},
+
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100, value: []byte{43}},
+		// WriteKindRollback 3
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 100, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, 100}},
+
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110, value: []byte{44}},
 		{cf: engine_util.CfLock, key: []byte{200}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
@@ -311,8 +338,10 @@ func TestResolveCommitWritten4C(t *testing.T) {
 	builder.assert([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 120},
+
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 100},
+
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110},
 		{cf: engine_util.CfLock, key: []byte{200}},
 	})
@@ -323,10 +352,15 @@ func TestResolveRollbackWritten4C(t *testing.T) {
 	builder := newBuilder(t)
 	cmd := resolveRequest(100, 0)
 	builder.init([]kv{
+		// TODO Q#2 被其他key,给commit了咋办？
+		// only process locked key
+		// KvResolveLock inspects a batch of locked keys and either rolls them all back or commits them all.
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100, value: []byte{42}},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 120, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 100}},
+
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100, value: []byte{43}},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 100, value: []byte{3, 0, 0, 0, 0, 0, 0, 0, 100}},
+
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110, value: []byte{44}},
 		{cf: engine_util.CfLock, key: []byte{200}, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 110, 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
@@ -338,8 +372,10 @@ func TestResolveRollbackWritten4C(t *testing.T) {
 	builder.assert([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 100},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 120},
+
 		{cf: engine_util.CfDefault, key: []byte{7}, ts: 100},
 		{cf: engine_util.CfWrite, key: []byte{201}, ts: 100},
+
 		{cf: engine_util.CfDefault, key: []byte{200}, ts: 110},
 		{cf: engine_util.CfLock, key: []byte{200}},
 	})
@@ -432,49 +468,67 @@ func builderForScan(t *testing.T) *testBuilder {
 		// Committed before 100.
 		{engine_util.CfDefault, []byte{1}, 80, []byte{50}},
 		{engine_util.CfWrite, []byte{1}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{1, 23}, 80, []byte{55}},
 		{engine_util.CfWrite, []byte{1, 23}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{3}, 80, []byte{51}},
 		{engine_util.CfWrite, []byte{3}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{3, 45}, 80, []byte{56}},
 		{engine_util.CfWrite, []byte{3, 45}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{3, 46}, 80, []byte{57}},
 		{engine_util.CfWrite, []byte{3, 46}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{3, 47}, 80, []byte{58}},
 		{engine_util.CfWrite, []byte{3, 47}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{3, 48}, 80, []byte{59}},
 		{engine_util.CfWrite, []byte{3, 48}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{4}, 80, []byte{52}},
 		{engine_util.CfWrite, []byte{4}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{120}, 80, []byte{53}},
 		{engine_util.CfWrite, []byte{120}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+
 		{engine_util.CfDefault, []byte{199}, 80, []byte{54}},
 		{engine_util.CfWrite, []byte{199}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
 
 		// Committed after 100.
 		{engine_util.CfDefault, []byte{4, 45}, 110, []byte{58}},
 		{engine_util.CfWrite, []byte{4, 45}, 116, []byte{1, 0, 0, 0, 0, 0, 0, 0, 110}},
+
 		{engine_util.CfDefault, []byte{4, 46}, 110, []byte{57}},
 		{engine_util.CfWrite, []byte{4, 46}, 116, []byte{1, 0, 0, 0, 0, 0, 0, 0, 110}},
+
 		{engine_util.CfDefault, []byte{4, 47}, 110, []byte{58}},
 		{engine_util.CfWrite, []byte{4, 47}, 116, []byte{1, 0, 0, 0, 0, 0, 0, 0, 110}},
+
 		{engine_util.CfDefault, []byte{4, 48}, 110, []byte{59}},
 		{engine_util.CfWrite, []byte{4, 48}, 116, []byte{1, 0, 0, 0, 0, 0, 0, 0, 110}},
 
 		// Committed after 100, but started before.
 		{engine_util.CfDefault, []byte{5, 45}, 97, []byte{60}},
 		{engine_util.CfWrite, []byte{5, 45}, 101, []byte{1, 0, 0, 0, 0, 0, 0, 0, 97}},
+
 		{engine_util.CfDefault, []byte{5, 46}, 97, []byte{61}},
 		{engine_util.CfWrite, []byte{5, 46}, 101, []byte{1, 0, 0, 0, 0, 0, 0, 0, 97}},
+
 		{engine_util.CfDefault, []byte{5, 47}, 97, []byte{62}},
 		{engine_util.CfWrite, []byte{5, 47}, 101, []byte{1, 0, 0, 0, 0, 0, 0, 0, 97}},
+
 		{engine_util.CfDefault, []byte{5, 48}, 97, []byte{63}},
 		{engine_util.CfWrite, []byte{5, 48}, 101, []byte{1, 0, 0, 0, 0, 0, 0, 0, 97}},
 
 		// A deleted value and replaced value.
 		{engine_util.CfDefault, []byte{150}, 80, []byte{42}},
+		// WriteKindPut 1
 		{engine_util.CfWrite, []byte{150}, 99, []byte{1, 0, 0, 0, 0, 0, 0, 0, 80}},
+		// WriteKindDelete 2
 		{engine_util.CfWrite, []byte{150}, 101, []byte{2, 0, 0, 0, 0, 0, 0, 0, 97}},
+		// WriteKindPut 1
 		{engine_util.CfDefault, []byte{150}, 110, []byte{64}},
 		{engine_util.CfWrite, []byte{150}, 116, []byte{1, 0, 0, 0, 0, 0, 0, 0, 110}},
 	}

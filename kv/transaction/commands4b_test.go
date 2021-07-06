@@ -11,9 +11,12 @@ import (
 
 // TestGetValue4B getting a value works in the simple case.
 func TestGetValue4B(t *testing.T) {
+	// prevTs 99
 	builder := newBuilder(t)
 	builder.init([]kv{
+		// apper in pair: CfDefault and Write
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 50, value: []byte{42}},
+		// value mvcc.Write.ToBytes()
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 54, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 50}},
 	})
 
@@ -100,8 +103,10 @@ func TestGetVersions4B(t *testing.T) {
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 50, value: []byte{42}},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 54, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 50}},
+
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 60, value: []byte{43}},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 66, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 60}},
+
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 120, value: []byte{44}},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 122, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 120}},
 	})
@@ -159,8 +164,10 @@ func TestGetDeleted4B(t *testing.T) {
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 50, value: []byte{42}},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 54, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 50}},
+		// delete
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 60, value: nil},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 66, value: []byte{2, 0, 0, 0, 0, 0, 0, 0, 60}},
+
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 120, value: []byte{44}},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 122, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 120}},
 	})
@@ -218,6 +225,7 @@ func TestGetLocked4B(t *testing.T) {
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{99}, ts: 50, value: []byte{42}},
 		{cf: engine_util.CfWrite, key: []byte{99}, ts: 54, value: []byte{1, 0, 0, 0, 0, 0, 0, 0, 50}},
+
 		{cf: engine_util.CfLock, key: []byte{99}, value: []byte{99, 1, 0, 0, 0, 0, 0, 0, 0, 200, 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
 
@@ -273,7 +281,9 @@ func TestSinglePrewrite4B(t *testing.T) {
 // TestPrewriteLocked4B tests that two prewrites to the same key causes a lock error.
 func TestPrewriteLocked4B(t *testing.T) {
 	builder := newBuilder(t)
+	// TS 100
 	cmd := builder.prewriteRequest(mutation(3, []byte{42}, kvrpcpb.Op_Put))
+	// TS 101
 	cmd2 := builder.prewriteRequest(mutation(3, []byte{53}, kvrpcpb.Op_Put))
 	resps := builder.runRequests(cmd, cmd2)
 
@@ -290,7 +300,9 @@ func TestPrewriteLocked4B(t *testing.T) {
 
 // TestPrewriteWritten4B tests an attempted prewrite with a write conflict.
 func TestPrewriteWritten4B(t *testing.T) {
+	// prevTs 99
 	builder := newBuilder(t)
+	// TS 100
 	cmd := builder.prewriteRequest(mutation(3, []byte{42}, kvrpcpb.Op_Put))
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 80, value: []byte{5}},
@@ -311,6 +323,7 @@ func TestPrewriteWritten4B(t *testing.T) {
 // TestPrewriteWrittenNoConflict4B tests an attempted prewrite with a write already present, but no conflict.
 func TestPrewriteWrittenNoConflict4B(t *testing.T) {
 	builder := newBuilder(t)
+	// TS 100
 	cmd := builder.prewriteRequest(mutation(3, []byte{42}, kvrpcpb.Op_Put))
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: 80, value: []byte{5}},
@@ -325,7 +338,7 @@ func TestPrewriteWrittenNoConflict4B(t *testing.T) {
 
 	builder.assert([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, value: []byte{5}, ts: 80},
-		{cf: engine_util.CfDefault, key: []byte{3}, value: []byte{42}},
+		{cf: engine_util.CfDefault, key: []byte{3}, value: []byte{42}}, // if there is no ts, ts = prevTs = 100
 		{cf: engine_util.CfLock, key: []byte{3}, value: []byte{1, 1, 0, 0, 0, 0, 0, 0, 0, builder.ts(), 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
 }
@@ -354,6 +367,7 @@ func TestMultiplePrewrites4B(t *testing.T) {
 // TestPrewriteOverwrite4B tests that two writes in the same prewrite succeed and we see the second write.
 func TestPrewriteOverwrite4B(t *testing.T) {
 	builder := newBuilder(t)
+	// ts 100
 	cmd := builder.prewriteRequest(mutation(3, []byte{42}, kvrpcpb.Op_Put), mutation(3, []byte{45}, kvrpcpb.Op_Put))
 	resp := builder.runOneRequest(cmd).(*kvrpcpb.PrewriteResponse)
 
@@ -362,7 +376,7 @@ func TestPrewriteOverwrite4B(t *testing.T) {
 	builder.assertLens(1, 1, 0)
 
 	builder.assert([]kv{
-		{cf: engine_util.CfDefault, key: []byte{3}, value: []byte{45}},
+		{cf: engine_util.CfDefault, key: []byte{3}, value: []byte{45}}, // if there is no ts, ts = prevTs = 100
 		{cf: engine_util.CfLock, key: []byte{3}, value: []byte{1, 1, 0, 0, 0, 0, 0, 0, 0, builder.ts(), 0, 0, 0, 0, 0, 0, 0, 0}},
 	})
 }
@@ -403,6 +417,7 @@ func TestEmptyCommit4B(t *testing.T) {
 // TestSimpleCommit4B tests committing a single key.
 func TestSingleCommit4B(t *testing.T) {
 	builder := newBuilder(t)
+	// ts 100
 	cmd := builder.commitRequest([]byte{3})
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, value: []byte{42}},

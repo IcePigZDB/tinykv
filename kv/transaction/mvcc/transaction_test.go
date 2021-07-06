@@ -104,6 +104,13 @@ func TestGetLock4A(t *testing.T) {
 	gotLock, err := txn.GetLock([]byte{1})
 	assert.Nil(t, err)
 	assert.Equal(t, lock, *gotLock)
+
+	// TODO  need or not?
+	// add to test the process of case:
+	// key not exist that is GetCF(key) return nil
+	gotLock, err = txn.GetLock([]byte{2})
+	assert.Nil(t, err)
+	assert.Nil(t, gotLock)
 }
 
 func TestDeleteLock4A(t *testing.T) {
@@ -132,6 +139,7 @@ func TestGetValueSimple4A(t *testing.T) {
 
 	value, err := txn.GetValue([]byte{16, 240})
 	assert.Nil(t, err)
+	// engine_util.CfDefault and StartTS 43 so get below
 	assert.Equal(t, []byte{1, 2, 3}, value)
 }
 

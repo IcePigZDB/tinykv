@@ -1,0 +1,731 @@
+=== RUN   TestSplitConfChangeSnapshotUnreliableRecoverConcurrentPartition3B
+2021/05/03 03:48:25.108284 node.go:194: [0;37m[info] start raft store node, storeID: 1[0m
+2021/05/03 03:48:25.108630 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:1 version:1 > peers:<id:1 store_id:1 > peers:<id:2 store_id:2 > peers:<id:3 store_id:3 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 1[0m
+2021/05/03 03:48:25.108718 raftstore.go:174: [0;37m[info] start store 1, region_count 1, tombstone_count 0, takes 204.113µs[0m
+2021/05/03 03:48:25.109252 node.go:194: [0;37m[info] start raft store node, storeID: 2[0m
+2021/05/03 03:48:25.109404 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:1 version:1 > peers:<id:1 store_id:1 > peers:<id:2 store_id:2 > peers:<id:3 store_id:3 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 2[0m
+2021/05/03 03:48:25.109455 raftstore.go:174: [0;37m[info] start store 2, region_count 1, tombstone_count 0, takes 95.515µs[0m
+2021/05/03 03:48:25.109912 node.go:194: [0;37m[info] start raft store node, storeID: 3[0m
+2021/05/03 03:48:25.110030 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:1 version:1 > peers:<id:1 store_id:1 > peers:<id:2 store_id:2 > peers:<id:3 store_id:3 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 3[0m
+2021/05/03 03:48:25.110097 raftstore.go:174: [0;37m[info] start store 3, region_count 1, tombstone_count 0, takes 107.466µs[0m
+2021/05/03 03:48:25.110584 node.go:194: [0;37m[info] start raft store node, storeID: 4[0m
+2021/05/03 03:48:25.110691 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:1 version:1 > peers:<id:1 store_id:1 > peers:<id:2 store_id:2 > peers:<id:3 store_id:3 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 4[0m
+2021/05/03 03:48:25.110736 raftstore.go:174: [0;37m[info] start store 4, region_count 1, tombstone_count 0, takes 78.541µs[0m
+2021/05/03 03:48:25.111185 node.go:194: [0;37m[info] start raft store node, storeID: 5[0m
+2021/05/03 03:48:25.111305 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:1 version:1 > peers:<id:1 store_id:1 > peers:<id:2 store_id:2 > peers:<id:3 store_id:3 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 5[0m
+2021/05/03 03:48:25.111350 raftstore.go:174: [0;37m[info] start store 5, region_count 1, tombstone_count 0, takes 82.43µs[0m
+2021/05/03 03:48:25.792601 raft.go:425: [0;37m[info] ++++ becomLeader: 5[0m
+2021/05/03 03:48:26.111988 test_test.go:217: [0;37m[info] Iteration 0
+[0m
+2021/05/03 03:48:26.112090 test_test.go:40: [0;37m[info] SpawnClientsAndWait: waiting for clients[0m
+2021/05/03 03:48:26.112087 test_test.go:230: [0;37m[info] 0: client new put 0 00000000,x 0 0 y
+[0m
+2021/05/03 03:48:26.112093 test_test.go:237: [0;37m[info] 1: client new scan 1 00000000-1 00000000
+[0m
+2021/05/03 03:48:26.112118 test_test.go:237: [0;37m[info] 3: client new scan 3 00000000-3 00000000
+[0m
+2021/05/03 03:48:26.112144 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112109 test_test.go:237: [0;37m[info] 2: client new scan 2 00000000-2 00000000
+[0m
+2021/05/03 03:48:26.112160 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112125 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112202 test_test.go:237: [0;37m[info] 1: client new scan 1 00000000-1 00000000
+[0m
+2021/05/03 03:48:26.112242 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112268 test_test.go:230: [0;37m[info] 1: client new put 1 00000000,x 1 0 y
+[0m
+2021/05/03 03:48:26.112165 test_test.go:237: [0;37m[info] 4: client new scan 4 00000000-4 00000000
+[0m
+2021/05/03 03:48:26.112317 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112333 test_test.go:237: [0;37m[info] 4: client new scan 4 00000000-4 00000000
+[0m
+2021/05/03 03:48:26.112346 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112179 test_test.go:230: [0;37m[info] 2: client new put 2 00000000,x 2 0 y
+[0m
+2021/05/03 03:48:26.112155 test_test.go:237: [0;37m[info] 3: client new scan 3 00000000-3 00000000
+[0m
+2021/05/03 03:48:26.112380 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112392 test_test.go:237: [0;37m[info] 3: client new scan 3 00000000-3 00000000
+[0m
+2021/05/03 03:48:26.112403 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112260 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Put put:<cf:"default" key:"0 00000000" value:"x 0 0 y" > ][0m
+2021/05/03 03:48:26.112358 test_test.go:237: [0;37m[info] 4: client new scan 4 00000000-4 00000000
+[0m
+2021/05/03 03:48:26.112429 test_test.go:240: [0;37m[info] GenericTest finis values:[],last:[0m
+2021/05/03 03:48:26.112439 test_test.go:230: [0;37m[info] 4: client new put 4 00000000,x 4 0 y
+[0m
+2021/05/03 03:48:26.112444 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Put put:<cf:"default" key:"1 00000000" value:"x 1 0 y" > ][0m
+2021/05/03 03:48:26.112507 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"1 00000000" value:"x 1 0 y" > ][0m
+2021/05/03 03:48:26.112529 cluster.go:184: [0;37m[info] key:4 00000000,reqs[cmd_type:Put put:<cf:"default" key:"4 00000000" value:"x 4 0 y" > ][0m
+2021/05/03 03:48:26.112407 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Put put:<cf:"default" key:"2 00000000" value:"x 2 0 y" > ][0m
+2021/05/03 03:48:26.112569 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"4 00000000" value:"x 4 0 y" > ][0m
+2021/05/03 03:48:26.112414 test_test.go:230: [0;37m[info] 3: client new put 3 00000000,x 3 0 y
+[0m
+2021/05/03 03:48:26.112444 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"0 00000000" value:"x 0 0 y" > ][0m
+2021/05/03 03:48:26.112814 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"2 00000000" value:"x 2 0 y" > ][0m
+2021/05/03 03:48:26.112858 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"1 00000000" value:"x 1 0 y" > > ,[0m
+2021/05/03 03:48:26.112923 cluster.go:184: [0;37m[info] key:3 00000000,reqs[cmd_type:Put put:<cf:"default" key:"3 00000000" value:"x 3 0 y" > ][0m
+2021/05/03 03:48:26.112960 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"3 00000000" value:"x 3 0 y" > ][0m
+2021/05/03 03:48:26.117032 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000000" value:"x 4 0 y" > > ,[0m
+2021/05/03 03:48:26.117112 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"0 00000000" value:"x 0 0 y" > > ,[0m
+2021/05/03 03:48:26.117196 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000000" value:"x 2 0 y" > > ,[0m
+2021/05/03 03:48:26.117257 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"3 00000000" value:"x 3 0 y" > > ,[0m
+2021/05/03 03:48:26.167548 test_test.go:237: [0;37m[info] 1: client new scan 1 00000000-1 00000001
+[0m
+2021/05/03 03:48:26.167606 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.167631 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.201048 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.237108 test_test.go:237: [0;37m[info] 0: client new scan 0 00000000-0 00000001
+[0m
+2021/05/03 03:48:26.237140 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.237141 test_test.go:237: [0;37m[info] 2: client new scan 2 00000000-2 00000001
+[0m
+2021/05/03 03:48:26.237198 test_test.go:230: [0;37m[info] 3: client new put 3 00000001,x 3 1 y
+[0m
+2021/05/03 03:48:26.237229 test_test.go:237: [0;37m[info] 4: client new scan 4 00000000-4 00000001
+[0m
+2021/05/03 03:48:26.237271 cluster.go:184: [0;37m[info] key:4 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.237295 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.237205 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.237304 cluster.go:184: [0;37m[info] key:3 00000001,reqs[cmd_type:Put put:<cf:"default" key:"3 00000001" value:"x 3 1 y" > ][0m
+2021/05/03 03:48:26.237374 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.237154 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.237588 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"3 00000001" value:"x 3 1 y" > ][0m
+2021/05/03 03:48:26.267831 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.267948 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.267996 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.268069 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"3 00000001" value:"x 3 1 y" > > ,[0m
+2021/05/03 03:48:26.334316 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 49 32 48 32 121]],last:x 1 0 y[0m
+2021/05/03 03:48:26.334348 test_test.go:237: [0;37m[info] 1: client new scan 1 00000000-1 00000001
+[0m
+2021/05/03 03:48:26.334384 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.334407 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.376002 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.413109 test_test.go:122: [0;37m[info] partition: [2 3 4 5], [1][0m
+2021/05/03 03:48:26.434457 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 52 32 48 32 121]],last:x 4 0 y[0m
+2021/05/03 03:48:26.434480 test_test.go:230: [0;37m[info] 4: client new put 4 00000001,x 4 1 y
+[0m
+2021/05/03 03:48:26.434515 cluster.go:184: [0;37m[info] key:4 00000001,reqs[cmd_type:Put put:<cf:"default" key:"4 00000001" value:"x 4 1 y" > ][0m
+2021/05/03 03:48:26.434535 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"4 00000001" value:"x 4 1 y" > ][0m
+2021/05/03 03:48:26.459355 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 50 32 48 32 121]],last:x 2 0 y[0m
+2021/05/03 03:48:26.459374 test_test.go:237: [0;37m[info] 2: client new scan 2 00000000-2 00000001
+[0m
+2021/05/03 03:48:26.459394 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.459406 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.485409 test_test.go:237: [0;37m[info] 3: client new scan 3 00000000-3 00000002
+[0m
+2021/05/03 03:48:26.485414 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 48 32 48 32 121]],last:x 0 0 y[0m
+2021/05/03 03:48:26.485444 cluster.go:184: [0;37m[info] key:3 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.485444 test_test.go:237: [0;37m[info] 0: client new scan 0 00000000-0 00000001
+[0m
+2021/05/03 03:48:26.485461 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.485484 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.485509 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.509420 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000001" value:"x 4 1 y" > > ,[0m
+2021/05/03 03:48:26.509490 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.509565 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.509611 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.559138 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 49 32 48 32 121]],last:x 1 0 y[0m
+2021/05/03 03:48:26.559198 test_test.go:230: [0;37m[info] 1: client new put 1 00000001,x 1 1 y
+[0m
+2021/05/03 03:48:26.559238 cluster.go:184: [0;37m[info] key:1 00000001,reqs[cmd_type:Put put:<cf:"default" key:"1 00000001" value:"x 1 1 y" > ][0m
+2021/05/03 03:48:26.559285 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"1 00000001" value:"x 1 1 y" > ][0m
+2021/05/03 03:48:26.587212 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"1 00000001" value:"x 1 1 y" > > ,[0m
+2021/05/03 03:48:26.599420 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 5 datachange_type:RemoveNode node_id:3 context:"\n\016\010\001\022\004\010\005\020\005\"\004\010\001\020\001\032\014\010\001\022\010\010\001\022\004\010\003\020\003" [0m
+2021/05/03 03:48:26.634636 test_test.go:237: [0;37m[info] 4: client new scan 4 00000000-4 00000002
+[0m
+2021/05/03 03:48:26.634669 cluster.go:184: [0;37m[info] key:4 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.634682 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.675854 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 50 32 48 32 121]],last:x 2 0 y[0m
+2021/05/03 03:48:26.675872 test_test.go:237: [0;37m[info] 2: client new scan 2 00000000-2 00000001
+[0m
+2021/05/03 03:48:26.675892 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.675904 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.692538 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 51 32 48 32 121] [120 32 51 32 49 32 121]],last:x 3 0 yx 3 1 y[0m
+2021/05/03 03:48:26.692572 test_test.go:230: [0;37m[info] 3: client new put 3 00000002,x 3 2 y
+[0m
+2021/05/03 03:48:26.692610 cluster.go:184: [0;37m[info] key:3 00000002,reqs[cmd_type:Put put:<cf:"default" key:"3 00000002" value:"x 3 2 y" > ][0m
+2021/05/03 03:48:26.692635 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"3 00000002" value:"x 3 2 y" > ][0m
+2021/05/03 03:48:26.701254 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 48 32 48 32 121]],last:x 0 0 y[0m
+2021/05/03 03:48:26.701298 test_test.go:230: [0;37m[info] 0: client new put 0 00000001,x 0 1 y
+[0m
+2021/05/03 03:48:26.701361 cluster.go:184: [0;37m[info] key:0 00000001,reqs[cmd_type:Put put:<cf:"default" key:"0 00000001" value:"x 0 1 y" > ][0m
+2021/05/03 03:48:26.701414 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"0 00000001" value:"x 0 1 y" > ][0m
+2021/05/03 03:48:26.709291 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.709413 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.709512 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"3 00000002" value:"x 3 2 y" > > ,[0m
+2021/05/03 03:48:26.709592 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:1 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"0 00000001" value:"x 0 1 y" > > ,[0m
+2021/05/03 03:48:26.718662 test_test.go:237: [0;37m[info] 1: client new scan 1 00000000-1 00000002
+[0m
+2021/05/03 03:48:26.718720 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.718746 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.754039 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:1 version:1 , current epoch conf_ver:2 version:1 [0m
+2021/05/03 03:48:26.754103 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.754048 peer_msg_handler.go:775: [0;37m[info] [region 1] 3 starts destroy[0m
+2021/05/03 03:48:26.754145 peer.go:203: [0;37m[info] [region 1] 3 begin to destroy[0m
+2021/05/03 03:48:26.754137 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.754224 peer_storage.go:298: [0;37m[info] [region 1] clear peer 1 meta key 1 apply key 1 raft key and 22 raft logs, takes 21.471µs[0m
+2021/05/03 03:48:26.791845 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.791866 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.791875 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeatResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.791884 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.791898 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.791905 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:2 version:1  ignore it[0m
+2021/05/03 03:48:26.791948 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 5 datachange_type:RemoveNode node_id:1 context:"\n\016\010\001\022\004\010\005\020\005\"\004\010\002\020\001\032\014\010\001\022\010\010\001\022\004\010\001\020\001" [0m
+2021/05/03 03:48:26.873026 peer.go:231: [0;37m[info] [region 1] 3 destroy itself, takes 118.87738ms[0m
+2021/05/03 03:48:26.935755 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 52 32 48 32 121] [120 32 52 32 49 32 121]],last:x 4 0 yx 4 1 y[0m
+2021/05/03 03:48:26.935791 test_test.go:237: [0;37m[info] 4: client new scan 4 00000000-4 00000002
+[0m
+2021/05/03 03:48:26.935845 cluster.go:184: [0;37m[info] key:4 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.935870 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.935940 region_task.go:137: [0;37m[info] succeed in deleting data in range. [regionId: 1, startKey: , endKey: ][0m
+2021/05/03 03:48:26.964025 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 50 32 48 32 121]],last:x 2 0 y[0m
+2021/05/03 03:48:26.964067 test_test.go:237: [0;37m[info] 2: client new scan 2 00000000-2 00000001
+[0m
+2021/05/03 03:48:26.964111 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.964042 test_test.go:237: [0;37m[info] 3: client new scan 3 00000000-3 00000003
+[0m
+2021/05/03 03:48:26.964159 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.964194 cluster.go:184: [0;37m[info] key:3 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.964054 test_test.go:237: [0;37m[info] 0: client new scan 0 00000000-0 00000002
+[0m
+2021/05/03 03:48:26.964260 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.964291 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.964222 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:26.976130 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.976176 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.976208 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:26.976235 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:27.015545 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 49 32 48 32 121] [120 32 49 32 49 32 121]],last:x 1 0 yx 1 1 y[0m
+2021/05/03 03:48:27.015584 test_test.go:230: [0;37m[info] 1: client new put 1 00000002,x 1 2 y
+[0m
+2021/05/03 03:48:27.015638 cluster.go:184: [0;37m[info] key:1 00000002,reqs[cmd_type:Put put:<cf:"default" key:"1 00000002" value:"x 1 2 y" > ][0m
+2021/05/03 03:48:27.015666 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"1 00000002" value:"x 1 2 y" > ][0m
+2021/05/03 03:48:27.054840 test_test.go:122: [0;37m[info] partition: [1 2 3 4], [5][0m
+2021/05/03 03:48:27.141543 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:2 version:1 , current epoch conf_ver:3 version:1 [0m
+2021/05/03 03:48:27.141615 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:2 version:1 , current epoch conf_ver:3 version:1 [0m
+2021/05/03 03:48:27.141750 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:3 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"1 00000002" value:"x 1 2 y" > > ,[0m
+2021/05/03 03:48:27.249661 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 5 datachange_type:RemoveNode node_id:5 context:"\n\016\010\001\022\004\010\005\020\005\"\004\010\003\020\001\032\014\010\001\022\010\010\001\022\004\010\005\020\005" [0m
+2021/05/03 03:48:27.523250 raft.go:425: [0;37m[info] ++++ becomLeader: 2[0m
+2021/05/03 03:48:27.615485 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 2 datachange_type:RemoveNode node_id:5 context:"\n\016\010\001\022\004\010\002\020\002\"\004\010\003\020\001\032\014\010\001\022\010\010\001\022\004\010\005\020\005" [0m
+2021/05/03 03:48:27.662356 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:3 version:1 , current epoch conf_ver:4 version:1 [0m
+2021/05/03 03:48:27.715425 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 2 datachange_type:RemoveNode node_id:4 context:"\n\016\010\001\022\004\010\002\020\002\"\004\010\004\020\001\032\014\010\001\022\010\010\001\022\004\010\004\020\004" [0m
+2021/05/03 03:48:27.729865 test_test.go:122: [0;37m[info] partition: [2 4 5], [1 3][0m
+2021/05/03 03:48:27.815650 store_worker.go:87: [0;31m[error] handle raft message failed storeID 3, tombstone peer [epoch: conf_ver:1 version:1 ] received an invalid message MsgRequestVote, ignore it[0m
+2021/05/03 03:48:27.815718 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:27.831696 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:27.831732 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:27.831891 peer_msg_handler.go:775: [0;37m[info] [region 1] 4 starts destroy[0m
+2021/05/03 03:48:27.831923 peer.go:203: [0;37m[info] [region 1] 4 begin to destroy[0m
+2021/05/03 03:48:27.831963 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppendResponse is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:27.831985 peer_storage.go:298: [0;37m[info] [region 1] clear peer 1 meta key 1 apply key 1 raft key and 31 raft logs, takes 44.903µs[0m
+2021/05/03 03:48:27.864980 peer.go:231: [0;37m[info] [region 1] 4 destroy itself, takes 33.050311ms[0m
+2021/05/03 03:48:27.875852 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:27.875889 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:27.875926 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:27.876021 region_task.go:137: [0;37m[info] succeed in deleting data in range. [regionId: 1, startKey: , endKey: ][0m
+2021/05/03 03:48:27.936793 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:27.954036 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 52 32 48 32 121] [120 32 52 32 49 32 121]],last:x 4 0 yx 4 1 y[0m
+2021/05/03 03:48:27.954067 test_test.go:230: [0;37m[info] 4: client new put 4 00000002,x 4 2 y
+[0m
+2021/05/03 03:48:27.954110 cluster.go:184: [0;37m[info] key:4 00000002,reqs[cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > ][0m
+2021/05/03 03:48:27.954137 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > ][0m
+2021/05/03 03:48:27.954195 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:27.962552 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:27.962655 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:27.962691 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:27.965225 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:27.979064 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 48 32 48 32 121] [120 32 48 32 49 32 121]],last:x 0 0 yx 0 1 y[0m
+2021/05/03 03:48:27.979111 test_test.go:237: [0;37m[info] 0: client new scan 0 00000000-0 00000002
+[0m
+2021/05/03 03:48:27.979156 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:27.979184 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:27.979253 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:27.987356 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:27.987422 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:2 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:27.987448 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:28.004087 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 50 32 48 32 121]],last:x 2 0 y[0m
+2021/05/03 03:48:28.004112 test_test.go:230: [0;37m[info] 2: client new put 2 00000001,x 2 1 y
+[0m
+2021/05/03 03:48:28.004142 cluster.go:184: [0;37m[info] key:2 00000001,reqs[cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > ][0m
+2021/05/03 03:48:28.004165 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > ][0m
+2021/05/03 03:48:28.004226 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:28.012418 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 51 32 48 32 121] [120 32 51 32 49 32 121] [120 32 51 32 50 32 121]],last:x 3 0 yx 3 1 yx 3 2 y[0m
+2021/05/03 03:48:28.012449 test_test.go:237: [0;37m[info] 3: client new scan 3 00000000-3 00000003
+[0m
+2021/05/03 03:48:28.012508 cluster.go:184: [0;37m[info] key:3 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:28.012531 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:28.020616 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:28.020647 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:28.020686 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:28.020891 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:28.020947 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:3 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"1 00000002" value:"x 1 2 y" > > ,[0m
+2021/05/03 03:48:28.020968 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:28.032140 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:28.032161 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:28.032489 test_test.go:230: [0;37m[info] 1: client new put 1 00000003,x 1 3 y
+[0m
+2021/05/03 03:48:28.032543 cluster.go:184: [0;37m[info] key:1 00000003,reqs[cmd_type:Put put:<cf:"default" key:"1 00000003" value:"x 1 3 y" > ][0m
+2021/05/03 03:48:28.032584 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Put put:<cf:"default" key:"1 00000003" value:"x 1 3 y" > ][0m
+2021/05/03 03:48:28.037371 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 2 datanode_id:6 context:"\n\016\010\001\022\004\010\002\020\002\"\004\010\005\020\001\032\n\010\001\022\006\022\004\010\006\020\003" [0m
+2021/05/03 03:48:28.037415 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:5 version:1  ignore it[0m
+2021/05/03 03:48:28.037489 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"1 00000003" value:"x 1 3 y" > > ,[0m
+2021/05/03 03:48:28.048805 test_test.go:237: [0;37m[info] 1: client new scan 1 00000000-1 00000004
+[0m
+2021/05/03 03:48:28.048867 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:28.048894 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:28.053991 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:28.054026 raft.go:245: [0;37m[info] 2 sendSanpshot to 6[0m
+2021/05/03 03:48:28.054040 peer_storage.go:182: [0;37m[info] [region 1] 2 requesting snapshot[0m
+2021/05/03 03:48:28.055159 snap.go:549: [0;37m[info] region 1 scan snapshot /tinykvTmp/test-raftstore265818541/snap/gen_1_7_43_(default|write|lock).sst, key count 12, size 300[0m
+2021/05/03 03:48:28.104470 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:28.104514 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:28.104474 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.132159 raft.go:635: [0;37m[info] ++++appendEntries ConfChange 2 datachange_type:RemoveNode node_id:2 context:"\n\016\010\001\022\004\010\002\020\002\"\004\010\006\020\001\032\014\010\001\022\010\010\001\022\004\010\002\020\002" [0m
+2021/05/03 03:48:28.132201 raft.go:245: [0;37m[info] 2 sendSanpshot to 6[0m
+2021/05/03 03:48:28.167595 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.167606 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:28.167652 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:28.267581 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.267623 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:28.267652 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:28.274653 test_test.go:122: [0;37m[info] partition: [1 3 4], [2 5][0m
+2021/05/03 03:48:28.367659 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.467700 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.567694 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.667710 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.726537 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:28.726583 store_worker.go:87: [0;31m[error] handle raft message failed storeID 3, tombstone peer [epoch: conf_ver:1 version:1 ] received an invalid message MsgRequestVote, ignore it[0m
+2021/05/03 03:48:28.767689 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:28.821929 test_test.go:122: [0;37m[info] partition: [2 3], [1 4 5][0m
+2021/05/03 03:48:28.867801 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:28.867842 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:28.954824 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:28.980425 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:28.984471 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:28.984518 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.005187 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:29.015717 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:29.023983 peer.go:51: [0;37m[info] [region 1] replicates peer with ID 6[0m
+2021/05/03 03:48:29.044666 peer_storage.go:182: [0;37m[info] [region 1] 2 requesting snapshot[0m
+2021/05/03 03:48:29.049494 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:29.092995 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.093035 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.130404 peer_storage.go:344: [0;37m[info] [region 1] 6 begin to apply snapshot[0m
+2021/05/03 03:48:29.130448 region_task.go:93: [0;37m[info] begin apply snap data. [regionId: 1][0m
+2021/05/03 03:48:29.130480 region_task.go:137: [0;37m[info] succeed in deleting data in range. [regionId: 1, startKey: , endKey: ][0m
+2021/05/03 03:48:29.209736 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.209778 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.284543 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.284599 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.401599 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:29.401698 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.401732 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.461187 test_test.go:122: [0;37m[info] partition: [1 3 4 5], [2][0m
+2021/05/03 03:48:29.501375 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.501397 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.548991 snap.go:700: [0;37m[info] apply snapshot ingested 1 tables[0m
+2021/05/03 03:48:29.549040 region_task.go:117: [0;37m[info] applying new data. [regionId: 1, timeTakes: 418.36237ms][0m
+2021/05/03 03:48:29.586385 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.586408 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.667893 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.667934 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.767855 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.767888 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.867908 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.867957 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.926782 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:29.955356 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:29.959845 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:29.959888 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.968003 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:29.968046 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:29.980949 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:30.005941 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:30.024340 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:30.050253 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:30.067902 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.067945 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.084929 test_test.go:122: [0;37m[info] partition: [1 2], [3 4 5][0m
+2021/05/03 03:48:30.176272 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.176297 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.268007 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.268041 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.368014 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.368075 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.467993 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.468016 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.590019 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.590065 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.668110 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.668139 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.690526 test_test.go:122: [0;37m[info] partition: [1 3], [2 4 5][0m
+2021/05/03 03:48:30.768118 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.768163 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.768135 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:30.868193 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:30.868211 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.868263 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.955503 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:30.976467 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:30.976503 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:30.976509 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:30.982098 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:30.993366 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:30.993393 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.007035 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:31.018196 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:31.018218 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.024423 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:31.024448 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:31.050404 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 2,msgheader:<region_id:1 peer:<id:2 store_id:2 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:31.068236 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.068282 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.168192 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.168223 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.168226 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:31.268202 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:31.268266 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.268299 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.311243 test_test.go:122: [0;37m[info] partition: [3 4 5], [1 2][0m
+2021/05/03 03:48:31.368304 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.368352 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.468360 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.468409 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.568339 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.568401 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.668368 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.668417 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.768330 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.768354 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.955686 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:31.959913 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:31.959941 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.959936 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:31.968312 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:31.968312 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:31.968358 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:31.982644 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:31.993363 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:31.993385 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:31.993423 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.007544 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:32.018302 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:5 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:32.018305 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:32.018338 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.018366 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.037044 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:32.037065 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.041282 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.051638 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:32.059931 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.059992 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:32.060037 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.068412 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:32.068458 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.068429 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.168376 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.168385 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:32.168421 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.268443 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.268460 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:32.268497 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.368423 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:32.368460 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:32.368446 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:32.955748 log.go:76: [0;37m[info] [5s]
+[0m
+2021/05/03 03:48:32.983458 log.go:76: [0;37m[info] [5s]
+[0m
+2021/05/03 03:48:33.008452 log.go:76: [0;37m[info] [5s]
+[0m
+2021/05/03 03:48:33.008993 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:33.009406 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.009440 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.016125 log.go:76: [0;37m[info] [5s]
+[0m
+2021/05/03 03:48:33.052682 log.go:76: [0;37m[info] [5s]
+[0m
+2021/05/03 03:48:33.055935 cluster.go:190: [0;37m[info] +++++Request 1th req, reqs: [cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > ][0m
+2021/05/03 03:48:33.084576 cluster.go:190: [0;37m[info] +++++Request 1th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:33.085194 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.085439 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.085444 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.085475 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:33.085552 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:33.085480 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.085602 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.085647 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.085679 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.085700 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.085465 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.085739 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.085752 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.085772 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.085791 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.085760 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.085889 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.085911 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.104035 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:33.104057 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.104074 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.104084 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.104114 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:33.104126 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.108145 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.108184 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.108201 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.108631 cluster.go:190: [0;37m[info] +++++Request 1th req, reqs: [cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > ][0m
+2021/05/03 03:48:33.108754 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:33.116319 cluster.go:190: [0;37m[info] +++++Request 1th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:33.118571 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.118599 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:33.118608 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:33.118698 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.141470 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:33.141519 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.141775 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.153830 cluster.go:190: [0;37m[info] +++++Request 1th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:33.153923 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:33.160231 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:33.160254 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.160244 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.168632 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.168634 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.168681 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.268619 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.268641 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.268651 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.368661 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.368747 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.368783 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.468873 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:33.476878 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.476901 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.476885 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.568727 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.568782 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.568697 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.668689 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.668753 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.668737 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.768697 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:33.768789 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.768848 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.828901 raft.go:425: [0;37m[info] ++++ becomLeader: 2[0m
+2021/05/03 03:48:33.930356 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.930405 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.930408 peer_msg_handler.go:775: [0;37m[info] [region 1] 2 starts destroy[0m
+2021/05/03 03:48:33.930436 peer.go:203: [0;37m[info] [region 1] 2 begin to destroy[0m
+2021/05/03 03:48:33.930516 peer_storage.go:298: [0;37m[info] [region 1] clear peer 1 meta key 1 apply key 1 raft key and 50 raft logs, takes 62.627µs[0m
+2021/05/03 03:48:33.993781 peer.go:231: [0;37m[info] [region 1] 2 destroy itself, takes 63.340284ms[0m
+2021/05/03 03:48:33.994020 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.994041 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:33.994159 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:33.994194 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.005113 region_task.go:137: [0;37m[info] succeed in deleting data in range. [regionId: 1, startKey: , endKey: ][0m
+2021/05/03 03:48:34.056332 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:34.077132 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.077177 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.077150 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.077213 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.085422 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:34.085485 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.085525 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.085522 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.085556 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.093824 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.093864 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.093814 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.093889 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.109294 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:34.127339 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:34.127345 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:34.127596 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.127638 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.127605 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:34.127616 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.127769 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.135422 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.135460 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.135459 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.135492 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.154783 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 5,msgheader:<region_id:1 peer:<id:5 store_id:5 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:34.160434 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.160473 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.160495 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgAppend[0m
+2021/05/03 03:48:34.160547 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgAppend is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.168834 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.168872 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.168858 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.168905 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.268829 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.268874 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.268843 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.268908 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.368926 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.368956 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.368926 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.368975 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.468825 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.468850 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.468843 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.468878 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.568889 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.568926 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.568911 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.568959 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.668926 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.668973 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.668967 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.669001 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.761223 raft.go:425: [0;37m[info] ++++ becomLeader: 6[0m
+2021/05/03 03:48:34.769137 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:34.769212 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:34.787606 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.787627 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.787639 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.787672 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.885663 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.885704 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:34.885690 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.885729 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.968988 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.969029 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:34.968998 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:34.969056 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:35.057133 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"4 00000002" value:"x 4 2 y" > > ,[0m
+2021/05/03 03:48:35.127276 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:35.127298 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:35.127272 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:35.127313 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:35.127524 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:35.127591 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Put put:<cf:"default" key:"2 00000001" value:"x 2 1 y" > > ,[0m
+2021/05/03 03:48:35.127656 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:35.143301 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 48 32 48 32 121] [120 32 48 32 49 32 121]],last:x 0 0 yx 0 1 y[0m
+2021/05/03 03:48:35.143338 test_test.go:43: [0;37m[info] SpawnClientsAndWait: client 0 is done
+[0m
+2021/05/03 03:48:35.151601 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 51 32 48 32 121] [120 32 51 32 49 32 121] [120 32 51 32 50 32 121]],last:x 3 0 yx 3 1 yx 3 2 y[0m
+2021/05/03 03:48:35.159853 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:6 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:35.185686 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:35.185728 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:6 version:1  ignore it[0m
+2021/05/03 03:48:35.185744 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgHeartbeat[0m
+2021/05/03 03:48:35.185777 peer_msg_handler.go:687: [0;37m[info] [region 1] raft message MsgHeartbeat is stale, current conf_ver:4 version:1  ignore it[0m
+2021/05/03 03:48:35.185909 test_test.go:240: [0;37m[info] GenericTest finis values:[[120 32 49 32 48 32 121] [120 32 49 32 49 32 121] [120 32 49 32 50 32 121] [120 32 49 32 51 32 121]],last:x 1 0 yx 1 1 yx 1 2 yx 1 3 y[0m
+2021/05/03 03:48:35.185943 test_test.go:43: [0;37m[info] SpawnClientsAndWait: client 1 is done
+[0m
+2021/05/03 03:48:35.185960 test_test.go:43: [0;37m[info] SpawnClientsAndWait: client 2 is done
+[0m
+2021/05/03 03:48:35.185970 test_test.go:43: [0;37m[info] SpawnClientsAndWait: client 3 is done
+[0m
+2021/05/03 03:48:35.185978 test_test.go:43: [0;37m[info] SpawnClientsAndWait: client 4 is done
+[0m
+2021/05/03 03:48:35.185990 test_test.go:287: [0;33m[warning] shutdown servers
+[0m
+2021/05/03 03:48:35.186013 node.go:199: [0;37m[info] stop raft store thread, storeID: 1[0m
+2021/05/03 03:48:35.186075 node.go:199: [0;37m[info] stop raft store thread, storeID: 2[0m
+2021/05/03 03:48:35.186110 node.go:199: [0;37m[info] stop raft store thread, storeID: 3[0m
+2021/05/03 03:48:35.193224 node.go:199: [0;37m[info] stop raft store thread, storeID: 4[0m
+2021/05/03 03:48:35.193281 node.go:199: [0;37m[info] stop raft store thread, storeID: 5[0m
+2021/05/03 03:48:35.694363 test_test.go:294: [0;33m[warning] restart servers
+[0m
+2021/05/03 03:48:35.695053 node.go:194: [0;37m[info] start raft store node, storeID: 1[0m
+2021/05/03 03:48:35.695332 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:1 version:1 > peers:<id:1 store_id:1 > peers:<id:2 store_id:2 > peers:<id:3 store_id:3 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 1[0m
+2021/05/03 03:48:35.695449 raftstore.go:174: [0;37m[info] start store 1, region_count 1, tombstone_count 0, takes 194.33µs[0m
+2021/05/03 03:48:35.696107 node.go:194: [0;37m[info] start raft store node, storeID: 2[0m
+2021/05/03 03:48:35.696275 raftstore.go:174: [0;37m[info] start store 2, region_count 1, tombstone_count 1, takes 35.774µs[0m
+2021/05/03 03:48:35.696939 node.go:194: [0;37m[info] start raft store node, storeID: 3[0m
+2021/05/03 03:48:35.697119 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:7 version:1 > peers:<id:6 store_id:3 >  create peer with ID 6[0m
+2021/05/03 03:48:35.697209 raft.go:425: [0;37m[info] ++++ becomLeader: 6[0m
+2021/05/03 03:48:35.697232 raftstore.go:174: [0;37m[info] start store 3, region_count 1, tombstone_count 0, takes 168.623µs[0m
+2021/05/03 03:48:35.697860 node.go:194: [0;37m[info] start raft store node, storeID: 4[0m
+2021/05/03 03:48:35.698003 raftstore.go:174: [0;37m[info] start store 4, region_count 1, tombstone_count 1, takes 19.176µs[0m
+2021/05/03 03:48:35.698667 node.go:194: [0;37m[info] start raft store node, storeID: 5[0m
+2021/05/03 03:48:35.698864 peer.go:41: [0;37m[info] region id:1 region_epoch:<conf_ver:3 version:1 > peers:<id:2 store_id:2 > peers:<id:4 store_id:4 > peers:<id:5 store_id:5 >  create peer with ID 5[0m
+2021/05/03 03:48:35.698995 raftstore.go:174: [0;37m[info] start store 5, region_count 1, tombstone_count 0, takes 180.94µs[0m
+2021/05/03 03:48:35.699066 test_test.go:304: [0;37m[info] read from clinets 0 j:2[0m
+2021/05/03 03:48:35.699114 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:35.699141 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:35.860899 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:6 version:1 , current epoch conf_ver:7 version:1 [0m
+2021/05/03 03:48:35.860927 peer_msg_handler.go:234: [0;37m[info] ++++++++++fast return [region 1] 6, d.region.RegionEpoch conf_ver:7 version:1 ,msg.RegionEpochconf_ver:6 version:1 [0m
+2021/05/03 03:48:35.860979 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:1 version:1 , current epoch conf_ver:3 version:1 [0m
+2021/05/03 03:48:35.861003 peer_msg_handler.go:234: [0;37m[info] ++++++++++fast return [region 1] 5, d.region.RegionEpoch conf_ver:3 version:1 ,msg.RegionEpochconf_ver:1 version:1 [0m
+2021/05/03 03:48:35.861035 util.go:121: [0;37m[info] epoch not match, region id 1, from epoch conf_ver:2 version:1 , current epoch conf_ver:3 version:1 [0m
+2021/05/03 03:48:35.861053 peer_msg_handler.go:234: [0;37m[info] ++++++++++fast return [region 1] 5, d.region.RegionEpoch conf_ver:3 version:1 ,msg.RegionEpochconf_ver:2 version:1 [0m
+2021/05/03 03:48:35.877740 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:35.893472 cluster.go:184: [0;37m[info] key:0 00000000,reqs[cmd_type:Delete delete:<cf:"default" key:"0 00000000" > ][0m
+2021/05/03 03:48:35.893524 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"0 00000000" > ][0m
+2021/05/03 03:48:35.901714 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"0 00000000" > > ,[0m
+2021/05/03 03:48:35.912639 cluster.go:184: [0;37m[info] key:0 00000001,reqs[cmd_type:Delete delete:<cf:"default" key:"0 00000001" > ][0m
+2021/05/03 03:48:35.912733 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"0 00000001" > ][0m
+2021/05/03 03:48:35.918337 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"0 00000001" > > ,[0m
+2021/05/03 03:48:35.929220 test_test.go:304: [0;37m[info] read from clinets 1 j:4[0m
+2021/05/03 03:48:35.929277 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:35.929301 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:35.935015 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:35.951755 cluster.go:184: [0;37m[info] key:1 00000000,reqs[cmd_type:Delete delete:<cf:"default" key:"1 00000000" > ][0m
+2021/05/03 03:48:35.951822 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"1 00000000" > ][0m
+2021/05/03 03:48:35.960033 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"1 00000000" > > ,[0m
+2021/05/03 03:48:36.000297 cluster.go:184: [0;37m[info] key:1 00000001,reqs[cmd_type:Delete delete:<cf:"default" key:"1 00000001" > ][0m
+2021/05/03 03:48:36.000340 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"1 00000001" > ][0m
+2021/05/03 03:48:36.018435 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"1 00000001" > > ,[0m
+2021/05/03 03:48:36.029309 cluster.go:184: [0;37m[info] key:1 00000002,reqs[cmd_type:Delete delete:<cf:"default" key:"1 00000002" > ][0m
+2021/05/03 03:48:36.029338 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"1 00000002" > ][0m
+2021/05/03 03:48:36.035008 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"1 00000002" > > ,[0m
+2021/05/03 03:48:36.045932 cluster.go:184: [0;37m[info] key:1 00000003,reqs[cmd_type:Delete delete:<cf:"default" key:"1 00000003" > ][0m
+2021/05/03 03:48:36.045965 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"1 00000003" > ][0m
+2021/05/03 03:48:36.051648 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"1 00000003" > > ,[0m
+2021/05/03 03:48:36.062531 test_test.go:304: [0;37m[info] read from clinets 2 j:2[0m
+2021/05/03 03:48:36.062567 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:36.062581 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:36.068273 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:36.084984 cluster.go:184: [0;37m[info] key:2 00000000,reqs[cmd_type:Delete delete:<cf:"default" key:"2 00000000" > ][0m
+2021/05/03 03:48:36.085059 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"2 00000000" > ][0m
+2021/05/03 03:48:36.093429 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"2 00000000" > > ,[0m
+2021/05/03 03:48:36.104382 cluster.go:184: [0;37m[info] key:2 00000001,reqs[cmd_type:Delete delete:<cf:"default" key:"2 00000001" > ][0m
+2021/05/03 03:48:36.104422 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"2 00000001" > ][0m
+2021/05/03 03:48:36.133784 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"2 00000001" > > ,[0m
+2021/05/03 03:48:36.154327 test_test.go:304: [0;37m[info] read from clinets 3 j:3[0m
+2021/05/03 03:48:36.154422 cluster.go:184: [0;37m[info] key:3 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:36.154447 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:36.159976 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:36.176921 cluster.go:184: [0;37m[info] key:3 00000000,reqs[cmd_type:Delete delete:<cf:"default" key:"3 00000000" > ][0m
+2021/05/03 03:48:36.176965 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"3 00000000" > ][0m
+2021/05/03 03:48:36.185075 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"3 00000000" > > ,[0m
+2021/05/03 03:48:36.196412 cluster.go:184: [0;37m[info] key:3 00000001,reqs[cmd_type:Delete delete:<cf:"default" key:"3 00000001" > ][0m
+2021/05/03 03:48:36.196452 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"3 00000001" > ][0m
+2021/05/03 03:48:36.201754 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"3 00000001" > > ,[0m
+2021/05/03 03:48:36.212863 cluster.go:184: [0;37m[info] key:3 00000002,reqs[cmd_type:Delete delete:<cf:"default" key:"3 00000002" > ][0m
+2021/05/03 03:48:36.212907 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"3 00000002" > ][0m
+2021/05/03 03:48:36.218440 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"3 00000002" > > ,[0m
+2021/05/03 03:48:36.254477 test_test.go:304: [0;37m[info] read from clinets 4 j:3[0m
+2021/05/03 03:48:36.254537 cluster.go:184: [0;37m[info] key:4 00000000,reqs[cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:36.254561 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Snap snap:<> ][0m
+2021/05/03 03:48:36.269372 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:36.269411 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:36.269633 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Snap snap:<> > ,[0m
+2021/05/03 03:48:36.285132 cluster.go:184: [0;37m[info] key:4 00000000,reqs[cmd_type:Delete delete:<cf:"default" key:"4 00000000" > ][0m
+2021/05/03 03:48:36.285154 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"4 00000000" > ][0m
+2021/05/03 03:48:36.293473 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"4 00000000" > > ,[0m
+2021/05/03 03:48:36.304416 cluster.go:184: [0;37m[info] key:4 00000001,reqs[cmd_type:Delete delete:<cf:"default" key:"4 00000001" > ][0m
+2021/05/03 03:48:36.304467 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"4 00000001" > ][0m
+2021/05/03 03:48:36.319279 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:36.319278 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:36.319489 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"4 00000001" > > ,[0m
+2021/05/03 03:48:36.329463 cluster.go:184: [0;37m[info] key:4 00000002,reqs[cmd_type:Delete delete:<cf:"default" key:"4 00000002" > ][0m
+2021/05/03 03:48:36.329504 cluster.go:190: [0;37m[info] +++++Request 0th req, reqs: [cmd_type:Delete delete:<cf:"default" key:"4 00000002" > ][0m
+2021/05/03 03:48:36.335065 peer_msg_handler.go:476: [0;37m[info] ++proposeRequest [region 1] 6,msgheader:<region_id:1 peer:<id:6 store_id:3 > region_epoch:<conf_ver:7 version:1 > > requests:<cmd_type:Delete delete:<cf:"default" key:"4 00000002" > > ,[0m
+2021/05/03 03:48:36.860991 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:36.860991 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:3 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:37.002938 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:6 version:1 , msg_type:MsgRequestVote[0m
+2021/05/03 03:48:37.002947 store_worker.go:146: [0;37m[info] tombstone peer receives a stale message. region_id:1, from_region_epoch:conf_ver:1 version:1 , current_region_epoch:conf_ver:4 version:1 , msg_type:MsgRequestVote[0m
+    test_test.go:357: region is not split
+2021/05/03 03:48:37.346918 node.go:199: [0;37m[info] stop raft store thread, storeID: 1[0m
+2021/05/03 03:48:37.346961 node.go:199: [0;37m[info] stop raft store thread, storeID: 2[0m
+2021/05/03 03:48:37.346984 node.go:199: [0;37m[info] stop raft store thread, storeID: 3[0m
+2021/05/03 03:48:37.347005 node.go:199: [0;37m[info] stop raft store thread, storeID: 4[0m
+2021/05/03 03:48:37.347042 node.go:199: [0;37m[info] stop raft store thread, storeID: 5[0m
+--- FAIL: TestSplitConfChangeSnapshotUnreliableRecoverConcurrentPartition3B (17.07s)
+FAIL
+FAIL	github.com/pingcap-incubator/tinykv/kv/test_raftstore	17.107s
+FAIL
