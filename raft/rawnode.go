@@ -75,7 +75,7 @@ type RawNode struct {
 	Raft *Raft
 	// Your Data Here (2A).
 	prevSoftSt *SoftState
-	prevHadrSt pb.HardState
+	prevHardSt pb.HardState
 }
 
 // NewRawNode returns a new RawNode given configuration and a list of raft peers.
@@ -85,7 +85,7 @@ func NewRawNode(config *Config) (*RawNode, error) {
 	rn := &RawNode{
 		Raft:       r,
 		prevSoftSt: r.softState(),
-		prevHadrSt: r.hardState(),
+		prevHardSt: r.hardState(),
 	}
 	return rn, nil
 }
@@ -162,15 +162,16 @@ func (rn *RawNode) Ready() Ready {
 		Messages:         r.msgs,
 	}
 	softSt := r.softState()
-	hadrSt := r.hardState()
+	hardSt := r.hardState()
 	if !softSt.equal(rn.prevSoftSt) {
 		rn.prevSoftSt = softSt
 		rd.SoftState = softSt
 	}
-	if !isHardStateEqual(hadrSt, rn.prevHadrSt) {
-		// TODO why not, process back
-		// rn.prevHadrSt = hadrSt
-		rd.HardState = hadrSt
+	if !isHardStateEqual(hardSt, rn.prevHardSt) {
+		// NOTE rn.hardState should not be update until(RawNode.Advance()),
+		// rd.hardState wrote to disk by by upper worker(peer_msg_hander.handleRaftReady())
+		// rn.prevHadrSt = hardSt
+		rd.HardState = hardSt
 	}
 	r.msgs = make([]pb.Message, 0)
 
@@ -189,7 +190,7 @@ func (rn *RawNode) HasReady() bool {
 	if !r.softState().equal(rn.prevSoftSt) {
 		return true
 	}
-	if hardSt := r.hardState(); !IsEmptyHardState(hardSt) && !isHardStateEqual(hardSt, rn.prevHadrSt) {
+	if hardSt := r.hardState(); !IsEmptyHardState(hardSt) && !isHardStateEqual(hardSt, rn.prevHardSt) {
 		return true
 	}
 	if len(r.RaftLog.unstableEntries()) > 0 ||
@@ -209,7 +210,7 @@ func (rn *RawNode) HasReady() bool {
 func (rn *RawNode) Advance(rd Ready) {
 	// Your Code Here (2A).
 	if !IsEmptyHardState(rd.HardState) {
-		rn.prevHadrSt = rd.HardState
+		rn.prevHardSt = rd.HardState
 	}
 	if len(rd.Entries) > 0 {
 		rn.Raft.RaftLog.stabled = rd.Entries[len(rd.Entries)-1].Index

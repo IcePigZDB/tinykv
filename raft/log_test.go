@@ -8,22 +8,25 @@ import (
 	pb "github.com/pingcap-incubator/tinykv/proto/pkg/eraftpb"
 )
 
+/*
+	use for simple debug only.
+*/
 func TestRaftlog(t *testing.T) {
 	storage := NewMemoryStorage()
 	// config := newTestConfig(1, []uint64{1, 2, 3}, 10, 1, NewMemoryStorage())
 	l := newLog(storage)
 	test_entries := []pb.Entry{
-		{Index: 1, Term: 1},
-		{Index: 2, Term: 1},
-		{Index: 3, Term: 1},
-		{Index: 4, Term: 2},
-		{Index: 5, Term: 2},
-		{Index: 6, Term: 2},
-		{Index: 7, Term: 3},
-		{Index: 8, Term: 3},
-		{Index: 9, Term: 3},
-		{Index: 10, Term: 3},
-		{Index: 11, Term: 3}}
+		{Term: 1, Index: 1, Data: []byte("some data")},
+		{Term: 1, Index: 2, Data: []byte("some data")},
+		{Term: 1, Index: 3, Data: []byte("some data")},
+		{Term: 4, Index: 4, Data: []byte("some data")},
+		{Term: 4, Index: 4, Data: []byte("some data")},
+		{Term: 5, Index: 5, Data: []byte("some data")},
+		{Term: 5, Index: 5, Data: []byte("some data")},
+		{Term: 6, Index: 6, Data: []byte("some data")},
+		{Term: 6, Index: 6, Data: []byte("some data")},
+		{Term: 6, Index: 6, Data: []byte("some data")},
+	}
 	l.entries = append(l.entries, test_entries...)
 	fmt.Println(l.entries)
 	fmt.Println(l.FirstIndex)
@@ -39,21 +42,15 @@ func TestRaftlog(t *testing.T) {
 	fmt.Println(idx)
 }
 
-func TestSortSearch(t *testing.T) {
-	test_entries := []pb.Entry{
-		{Index: 1, Term: 1},
-		{Index: 2, Term: 1},
-		{Index: 3, Term: 1},
-		{Index: 4, Term: 4},
-		{Index: 5, Term: 4},
-		{Index: 6, Term: 5},
-		{Index: 7, Term: 5},
-		{Index: 8, Term: 6},
-		{Index: 9, Term: 6},
-		{Index: 10, Term: 6},
-	}
-	logTerm := uint64(3)
-	sliceIdx := sort.Search(len(test_entries),
-		func(i int) bool { return test_entries[i].Term > logTerm })
-	fmt.Println(sliceIdx)
-}
+/*
+TestCompactionSideEffects
+TestHasNextEnts
+TestNextEnts
+TestUnstableEnts
+TestCompaction
+TestLogRestore
+TestIsOutOfBounds
+TestTerm
+TestTermWithUnstableSnapshot
+TestSlice
+*/
