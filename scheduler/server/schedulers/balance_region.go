@@ -17,7 +17,6 @@ import (
 	"fmt"
 	"sort"
 
-	"github.com/pingcap-incubator/tinykv/log"
 	"github.com/pingcap-incubator/tinykv/scheduler/server/core"
 	"github.com/pingcap-incubator/tinykv/scheduler/server/schedule"
 	"github.com/pingcap-incubator/tinykv/scheduler/server/schedule/operator"
@@ -136,7 +135,7 @@ func (s *balanceRegionScheduler) Schedule(cluster opt.Cluster) *operator.Operato
 		return nil
 	}
 	storeIds := region.GetStoreIds()
-	log.Infof("storeIds:%v", storeIds)
+	// log.Infof("storeIds:%v", storeIds)
 	// no need to move if replicas num < MaxReplicas
 	if len(storeIds) < cluster.GetMaxReplicas() {
 		// log.Infof("no need to mv: replicas num %d < MaxReplicas %d", len(storeIds), cluster.GetMaxReplicas())

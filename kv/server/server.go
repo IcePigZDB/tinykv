@@ -195,14 +195,15 @@ func (server *Server) KvPrewrite(_ context.Context, req *kvrpcpb.PrewriteRequest
 		}
 		switch mutation.Op {
 		case kvrpcpb.Op_Put:
-			// log.Infof("______________value:%v", mutation.Value)
 			mvccTxn.PutValue(mutation.Key, mutation.Value)
-			mvccTxn.PutLock(mutation.Key, &mvcc.Lock{Primary: req.PrimaryLock, Ts: req.StartVersion, Ttl: req.LockTtl, Kind: mvcc.WriteKindFromProto(mutation.Op)})
-			// case kvrpcpb.Op_Del:
-			// case kvrpcpb.Op_Rollback:
+		case kvrpcpb.Op_Del:
+			// TODO this line has not been test.
+			mvccTxn.DeleteValue(mutation.Key)
+		default:
+			return nil, fmt.Errorf("Invalid Op")
 		}
+		mvccTxn.PutLock(mutation.Key, &mvcc.Lock{Primary: req.PrimaryLock, Ts: req.StartVersion, Ttl: req.LockTtl, Kind: mvcc.WriteKindFromProto(mutation.Op)})
 	}
-	log.Infof("writes:%v", mvccTxn.Writes())
 	err = server.storage.Write(req.Context, mvccTxn.Writes())
 	resp.Errors = keyErrors
 	return resp, err
@@ -359,12 +360,6 @@ func (server *Server) KvBatchRollback(_ context.Context, req *kvrpcpb.BatchRollb
 		if err != nil {
 			return resp, err
 		}
-		// TODO should add this ?
-		// if lock == nil {
-		// 	continue
-		// }
-		// do not Delte ohter transaction (lock.Ts != req.StartVersion)'s lock and value
-		// and should write a WriteKindRollback
 		if lock != nil && lock.Ts != req.StartVersion {
 			mvccTxn.PutWrite(key, req.StartVersion, &mvcc.Write{StartTS: req.StartVersion, Kind: mvcc.WriteKindRollback})
 			continue

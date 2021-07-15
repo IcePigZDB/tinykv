@@ -80,6 +80,7 @@ func (r *splitCheckHandler) splitCheck(regionID uint64, startKey, endKey []byte)
 	for it.Seek(startKey); it.Valid(); it.Next() {
 		item := it.Item()
 		key := item.Key()
+		// stop and update peer's ApproximateSize
 		if engine_util.ExceedEndKey(key, endKey) {
 			// update region size
 			r.router.Send(regionID, message.Msg{
@@ -88,6 +89,7 @@ func (r *splitCheckHandler) splitCheck(regionID uint64, startKey, endKey []byte)
 			})
 			break
 		}
+		// add key value size one by one 
 		if r.checker.onKv(key, item) {
 			break
 		}
@@ -118,6 +120,7 @@ func (checker *sizeSplitChecker) reset() {
 func (checker *sizeSplitChecker) onKv(key []byte, item engine_util.DBItem) bool {
 	valueSize := uint64(item.ValueSize())
 	size := uint64(len(key)) + valueSize
+	// add key value size one by one
 	checker.currentSize += size
 	if checker.currentSize > checker.splitSize && checker.splitKey == nil {
 		checker.splitKey = util.SafeCopy(key)

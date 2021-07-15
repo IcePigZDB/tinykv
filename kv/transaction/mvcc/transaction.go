@@ -7,7 +7,6 @@ import (
 	"github.com/pingcap-incubator/tinykv/kv/storage"
 	"github.com/pingcap-incubator/tinykv/kv/util/codec"
 	"github.com/pingcap-incubator/tinykv/kv/util/engine_util"
-	"github.com/pingcap-incubator/tinykv/log"
 	"github.com/pingcap-incubator/tinykv/proto/pkg/kvrpcpb"
 	"github.com/pingcap-incubator/tinykv/scheduler/pkg/tsoutil"
 )
@@ -79,7 +78,7 @@ func (txn *MvccTxn) PutLock(key []byte, lock *Lock) {
 			Key:   key,
 			Value: lock.ToBytes(),
 			Cf:    engine_util.CfLock}}
-	log.Infof("+++PutLock:%v, key:%v,EncodeKey:%v,lockBytes:%v", modify, key, EncodeKey(key, txn.StartTS), lock.ToBytes())
+	// log.Infof("+++PutLock:%v, key:%v,EncodeKey:%v,lockBytes:%v", modify, key, EncodeKey(key, txn.StartTS), lock.ToBytes())
 	txn.writes = append(txn.writes, modify)
 }
 
@@ -90,7 +89,7 @@ func (txn *MvccTxn) DeleteLock(key []byte) {
 		Data: storage.Delete{
 			Key: key,
 			Cf:  engine_util.CfLock}}
-	log.Infof("+++DeleteLock:%v", modify)
+	// log.Infof("+++DeleteLock:%v", modify)
 	txn.writes = append(txn.writes, modify)
 }
 
@@ -130,7 +129,7 @@ func (txn *MvccTxn) PutValue(key []byte, value []byte) {
 	encodeKey := EncodeKey(key, txn.StartTS)
 	modify := storage.Modify{Data: storage.Put{Key: encodeKey, Value: value,
 		Cf: engine_util.CfDefault}}
-	log.Infof("+++PutValue:%v", modify)
+	// log.Infof("+++PutValue:%v", modify)
 	txn.writes = append(txn.writes, modify)
 }
 
@@ -140,7 +139,7 @@ func (txn *MvccTxn) DeleteValue(key []byte) {
 	encodeKey := EncodeKey(key, txn.StartTS)
 	modify := storage.Modify{Data: storage.Delete{Key: encodeKey,
 		Cf: engine_util.CfDefault}}
-	log.Infof("+++DeleteValue:%v", modify)
+	// log.Infof("+++DeleteValue:%v", modify)
 	txn.writes = append(txn.writes, modify)
 }
 

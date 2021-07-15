@@ -339,7 +339,6 @@ func (r *Raft) tick() {
 	case StateCandidate:
 		r.tickElection()
 	case StateLeader:
-		// TODO need tick transferee or not?
 		r.tickHeartbeat()
 	}
 }
@@ -456,7 +455,7 @@ func (r *Raft) stepFollower(m pb.Message) {
 		r.handleTransferLeaderNotLeader(m)
 	case pb.MessageType_MsgTimeoutNow:
 		if _, ok := r.Prs[r.id]; !ok {
-			log.Infof("%x not in r.Prs, do not do Election after MsgTimeoutNow", r.id)
+			// log.Infof("%x not in r.Prs, do not do Election after MsgTimeoutNow", r.id)
 			return
 		}
 		r.doElection()
@@ -615,7 +614,7 @@ func (r *Raft) appendEntries(entries []*pb.Entry) {
 			}
 			cc := &eraftpb.ConfChange{}
 			cc.Unmarshal(entry.Data)
-			log.Infof("++++appendEntries ConfChange %v data%v", r.id, cc)
+			// log.Infof("++++appendEntries ConfChange %v data%v", r.id, cc)
 			r.PendingConfIndex = entry.Index
 		}
 		r.RaftLog.entries = append(r.RaftLog.entries, *entry)
@@ -690,7 +689,7 @@ func (r *Raft) handleAppendEntries(m pb.Message) {
 				sliceIdx := l.toSliceIndex(entry.Index)
 				l.entries[sliceIdx] = *entry
 				l.entries = l.entries[:sliceIdx+1]
-				// TODO no need to clear storage？if need it will use snapshot
+				// NOTE peerStorage.Append clean entry will never be commit
 				l.stabled = min(entry.Index-1, l.stabled)
 
 			}
@@ -742,10 +741,11 @@ func (r *Raft) handleAppendEntriesResponse(m pb.Message) {
 		r.Prs[m.From].Match = m.Index
 		r.Prs[m.From].Next = m.Index + 1
 		r.leaderCommit()
-		//TODO leaderTransferee
-		// if m.From == r.leadTransferee && m.Index == r.RaftLog.LastIndex() {
-		// 	r.sendTimeoutNow(m.From)
-		// 	r.leadTransferee = None
+		// leaderTransferee fast path
+		if m.From == r.leadTransferee && m.Index == r.RaftLog.LastIndex() {
+			r.sendTimeoutNow(m.From)
+			r.leadTransferee = None
+		}
 	}
 	if m.From == r.leadTransferee && r.Prs[m.From].Match == r.RaftLog.LastIndex() {
 		r.sendTimeoutNow(r.leadTransferee)
@@ -856,13 +856,13 @@ func (r *Raft) handleTransferLeaderLeader(m pb.Message) {
 		return
 	}
 
-	log.Infof("++handleTransferLeaderLeader %x [term %d] starts to transfer leadership from leader %x to %x", r.id, r.Term, r.Lead, m.From)
+	// log.Infof("++handleTransferLeaderLeader %x [term %d] starts to transfer leadership from leader %x to %x", r.id, r.Term, r.Lead, m.From)
 	r.leadTransferee = m.From
 	// r.electionElapsed = 0
 	r.resetTimer()
 	if r.Prs[m.From].Match == r.RaftLog.LastIndex() {
 		r.sendTimeoutNow(r.leadTransferee)
-		log.Infof("++handleTransferLeaderLeader %x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log", r.id, r.leadTransferee, r.leadTransferee)
+		// log.Infof("++handleTransferLeaderLeader %x sends MsgTimeoutNow to %x immediately as %x already has up-to-date log", r.id, r.leadTransferee, r.leadTransferee)
 	} else {
 		r.sendAppend(r.leadTransferee)
 	}

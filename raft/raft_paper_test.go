@@ -466,11 +466,11 @@ func TestLeaderAcknowledgeCommit2AB(t *testing.T) {
 		{5, map[uint64]bool{2: true, 3: true}, true},
 		{5, map[uint64]bool{2: true, 3: true, 4: true}, true},
 		{5, map[uint64]bool{2: true, 3: true, 4: true, 5: true}, true},
-		// TODO 自己添加测试偶数情况？
+		// 自己添加的偶数情况测试
 		{4, map[uint64]bool{2: true, 3: true, 4: true}, true},
 		{4, map[uint64]bool{2: true, 3: true, 4: false}, true},
-		// TODO 偶数试配点，leaderCommit
-		// {4, map[uint64]bool{2: true, 3: false, 4: false}, false},
+		// 偶数试配点，leaderCommit
+		{4, map[uint64]bool{2: true, 3: false, 4: false}, false},
 	}
 	for i, tt := range tests {
 		s := NewMemoryStorage()
@@ -499,7 +499,6 @@ func TestLeaderAcknowledgeCommit2AB(t *testing.T) {
 // Also, it applies the entry to its local state machine (in log order).
 // Reference: section 5.3
 // 用Storage来测试Leader能处理上一个leader遗留的存储到storage里面持久化的entries
-// TODO 用becomLeader来测试leader能处理没有持久化的遗留的entries?
 func TestLeaderCommitPrecedingEntries2AB(t *testing.T) {
 	tests := [][]pb.Entry{
 		{},

@@ -115,84 +115,84 @@ func (l *RaftLog) nextEnts() (ents []pb.Entry) {
 }
 
 // LastIndex return the last index of the log entries
-// func (l *RaftLog) LastIndex() uint64 {
-// 	// Your Code Here (2A).
-// 	// has entries
-// 	if len(l.entries) != 0 {
-// 		return l.entries[len(l.entries)-1].Index
-// 	}
-// 	// no entries, has snapshot
-// 	if !IsEmptySnap(l.pendingSnapshot) {
-// 		return l.pendingSnapshot.Metadata.Index
-// 	}
-// 	// no entries, no snapshot
-// 	i, err := l.storage.LastIndex()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	return i
-// }
-
 func (l *RaftLog) LastIndex() uint64 {
 	// Your Code Here (2A).
-	var index uint64
+	// has entries
+	if len(l.entries) != 0 {
+		return l.entries[len(l.entries)-1].Index
+	}
+	// no entries, has snapshot
 	if !IsEmptySnap(l.pendingSnapshot) {
-		index = l.pendingSnapshot.Metadata.Index
+		return l.pendingSnapshot.Metadata.Index
 	}
-	if len(l.entries) > 0 {
-		return max(l.entries[len(l.entries)-1].Index, index)
+	// no entries, no snapshot
+	i, err := l.storage.LastIndex()
+	if err != nil {
+		panic(err)
 	}
-	i, _ := l.storage.LastIndex()
-	return max(i, index)
+	return i
 }
 
-// Term return the term of the entry in the given indexG
-// func (l *RaftLog) Term(i uint64) (uint64, error) {
+// func (l *RaftLog) LastIndex() uint64 {
 // 	// Your Code Here (2A).
-// 	// index larger than last entries
-// 	if i > l.LastIndex() {
-// 		return 0, ErrUnavailable
+// 	var index uint64
+// 	if !IsEmptySnap(l.pendingSnapshot) {
+// 		index = l.pendingSnapshot.Metadata.Index
 // 	}
-// 	// check in snapshot
-// 	if i < l.FirstIndex {
-// 		if !IsEmptySnap(l.pendingSnapshot) && i == l.pendingSnapshot.Metadata.Index {
-// 			return l.pendingSnapshot.Metadata.Term, nil
-// 		}
-// 		if !IsEmptySnap(l.pendingSnapshot) && i < l.pendingSnapshot.Metadata.Index {
-// 			return 0, ErrCompacted
-// 		}
+// 	if len(l.entries) > 0 {
+// 		return max(l.entries[len(l.entries)-1].Index, index)
 // 	}
-// 	// in entries
-// 	if len(l.entries) > 0 && i >= l.FirstIndex {
-// 		return l.entries[i-l.FirstIndex].Term, nil
-// 	}
-// 	// not in entries
-// 	term, err := l.storage.Term(i)
-// 	if err == nil {
-// 		return term, nil
-// 	}
-// 	if err == ErrCompacted || err == ErrUnavailable {
-// 		return 0, err
-// 	}
-// 	panic(err)
+// 	i, _ := l.storage.LastIndex()
+// 	return max(i, index)
 // }
 
+// Term return the term of the entry in the given indexG
 func (l *RaftLog) Term(i uint64) (uint64, error) {
 	// Your Code Here (2A).
+	// index larger than last entries
+	if i > l.LastIndex() {
+		return 0, ErrUnavailable
+	}
+	// check in snapshot
+	if i < l.FirstIndex {
+		if !IsEmptySnap(l.pendingSnapshot) && i == l.pendingSnapshot.Metadata.Index {
+			return l.pendingSnapshot.Metadata.Term, nil
+		}
+		if !IsEmptySnap(l.pendingSnapshot) && i < l.pendingSnapshot.Metadata.Index {
+			return 0, ErrCompacted
+		}
+	}
+	// in entries
 	if len(l.entries) > 0 && i >= l.FirstIndex {
 		return l.entries[i-l.FirstIndex].Term, nil
 	}
+	// not in entries
 	term, err := l.storage.Term(i)
-	if err == ErrUnavailable && !IsEmptySnap(l.pendingSnapshot) {
-		if i == l.pendingSnapshot.Metadata.Index {
-			term = l.pendingSnapshot.Metadata.Term
-			err = nil
-		} else if i < l.pendingSnapshot.Metadata.Index {
-			err = ErrCompacted
-		}
+	if err == nil {
+		return term, nil
 	}
-	return term, err
+	if err == ErrCompacted || err == ErrUnavailable {
+		return 0, err
+	}
+	panic(err)
 }
+
+// func (l *RaftLog) Term(i uint64) (uint64, error) {
+// 	// Your Code Here (2A).
+// 	if len(l.entries) > 0 && i >= l.FirstIndex {
+// 		return l.entries[i-l.FirstIndex].Term, nil
+// 	}
+// 	term, err := l.storage.Term(i)
+// 	if err == ErrUnavailable && !IsEmptySnap(l.pendingSnapshot) {
+// 		if i == l.pendingSnapshot.Metadata.Index {
+// 			term = l.pendingSnapshot.Metadata.Term
+// 			err = nil
+// 		} else if i < l.pendingSnapshot.Metadata.Index {
+// 			err = ErrCompacted
+// 		}
+// 	}
+// 	return term, err
+// }
 
 func (l *RaftLog) toSliceIndex(i uint64) int {
 	idx := int(i - l.FirstIndex)

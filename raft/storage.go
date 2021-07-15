@@ -126,7 +126,6 @@ func (ms *MemoryStorage) Entries(lo, hi uint64) ([]pb.Entry, error) {
 	ents := ms.ents[lo-offset : hi-offset]
 	if len(ms.ents) == 1 && len(ents) != 0 {
 		// only contains dummy entries.
-		//TODO what is dummy entries
 		return nil, ErrUnavailable
 	}
 	return ents, nil

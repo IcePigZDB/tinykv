@@ -325,15 +325,18 @@ func (ps *PeerStorage) Append(entries []eraftpb.Entry, raftWB *engine_util.Write
 	}
 
 	regionId := ps.region.GetId()
+	// append the given entries
 	for _, entry := range entries {
 		raftWB.SetMeta(meta.RaftLogKey(regionId, entry.Index), &entry)
 	}
+	//  delete log entries that will never be committed 
 	prevLast, _ := ps.LastIndex()
 	if prevLast > last {
 		for i := last + 1; i <= prevLast; i++ {
 			raftWB.DeleteMeta(meta.RaftLogKey(regionId, i))
 		}
 	}
+	// update ps.raftState
 	ps.raftState.LastIndex = last
 	ps.raftState.LastTerm = entries[len(entries)-1].Term
 	return nil
@@ -366,6 +369,7 @@ func (ps *PeerStorage) ApplySnapshot(snapshot *eraftpb.Snapshot, kvWB *engine_ut
 	ps.snapState.StateType = snap.SnapState_Applying
 	kvWB.SetMeta(meta.ApplyStateKey(snapData.Region.GetId()), ps.applyState)
 
+	// assign region sheduler worker to apply snapshot
 	ch := make(chan bool, 1)
 	ps.regionSched <- &runner.RegionTaskApply{
 		RegionId: snapData.Region.GetId(),
@@ -386,10 +390,11 @@ func (ps *PeerStorage) ApplySnapshot(snapshot *eraftpb.Snapshot, kvWB *engine_ut
 func (ps *PeerStorage) SaveReadyState(ready *raft.Ready) (*ApplySnapResult, error) {
 	// Hint: you may call `Append()` and `ApplySnapshot()` in this function
 	// Your Code Here (2B/2C).
-	if len(ready.Entries) != 0 || len(ready.CommittedEntries) != 0 || ready.SoftState != nil || !raft.IsEmptyHardState(ready.HardState) {
+	// if len(ready.Entries) != 0 || len(ready.CommittedEntries) != 0 || ready.SoftState != nil || !raft.IsEmptyHardState(ready.HardState) {
 		// log.Infof("++++++++++SaveReadyState,ps_Tag:%s,ready{len(Entries):%d,len(CommittedEntries):%d,len(Messages)%d,softState:%v,hardState:%v,Entries%v,CommittedEntries%v},local{RaftState:%v,applyState:%v,snapState%v}",
 		// ps.Tag, len(ready.Entries), len(ready.CommittedEntries), len(ready.Messages), ready.SoftState, ready.HardState, ready.Entries, ready.CommittedEntries, ps.raftState, ps.applyState, ps.snapState)
-	}
+	// }
+    // snapshot
 	raftWB := new(engine_util.WriteBatch)
 	var result *ApplySnapResult
 	var err error
@@ -398,10 +403,12 @@ func (ps *PeerStorage) SaveReadyState(ready *raft.Ready) (*ApplySnapResult, erro
 		result, err = ps.ApplySnapshot(&ready.Snapshot, kvWB, raftWB)
 		kvWB.WriteToDB(ps.Engines.Kv)
 	}
+    // make unstable entries stable
 	ps.Append(ready.Entries, raftWB)
 	if !raft.IsEmptyHardState(ready.HardState) {
 		ps.raftState.HardState = &ready.HardState
 	}
+    // HardState
 	raftWB.SetMeta(meta.RaftStateKey(ps.region.GetId()), ps.raftState)
 	raftWB.WriteToDB(ps.Engines.Raft)
 	return result, err

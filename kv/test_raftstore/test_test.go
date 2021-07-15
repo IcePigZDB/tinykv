@@ -338,7 +338,7 @@ func GenericTest(t *testing.T, part string, nclients int, unreliable bool, crash
 					}
 					truncatedIdx := state.TruncatedState.Index
 					appliedIdx := state.AppliedIndex
-					// TODO why this formular?
+					// why this formular?
 					if appliedIdx-truncatedIdx > 2*uint64(maxraftlog) {
 						t.Fatalf("logs were not trimmed (%v - %v > 2*%v)", appliedIdx, truncatedIdx, maxraftlog)
 					}
@@ -752,5 +752,5 @@ func TestSplitConfChangeSnapshotUnreliableRecover3B(t *testing.T) {
 
 func TestSplitConfChangeSnapshotUnreliableRecoverConcurrentPartition3B(t *testing.T) {
 	// Test: unreliable net, restarts, partitions, snapshots, conf change, many clients (3B) ...
-GenericTest(t, "3B", 5, true, true, true, 100, true, true)
+	GenericTest(t, "3B", 5, true, true, true, 100, true, true)
 }

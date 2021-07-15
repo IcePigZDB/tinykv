@@ -307,8 +307,8 @@ func (c *RaftCluster) processRegionHeartbeat(region *core.RegionInfo) error {
 	overlapRegions := c.core.GetOverlaps(region)
 	// overlapRegions := c.ScanRegions(region.GetStartKey(), region.GetEndKey(), -1)
 	for _, overlapRegion := range overlapRegions {
-		log.Infof("oldRegion.RegionEpoch:%v", region.GetRegionEpoch())
-		log.Infof("overlap_region.RegionEpoch:%v", overlapRegion.GetRegionEpoch())
+		// log.Infof("oldRegion.RegionEpoch:%v", region.GetRegionEpoch())
+		// log.Infof("overlap_region.RegionEpoch:%v", overlapRegion.GetRegionEpoch())
 		if util.IsEpochStale(regionEpoch, overlapRegion.GetRegionEpoch()) {
 			// log.Infof("+overlap regionEpoch with the same regionID: %v", overlap_region.GetRegionEpoch())
 			return ErrRegionIsStale(region.GetMeta(), overlapRegion.GetMeta())

@@ -88,7 +88,7 @@ func (c *Cluster) Start() {
 	}
 
 	regionEpoch := &metapb.RegionEpoch{
-		Version: raftstore.InitEpochVer, // 1
+		Version: raftstore.InitEpochVer,     // 1
 		ConfVer: raftstore.InitEpochConfVer, // 1
 	}
 	firstRegion := &metapb.Region{
@@ -97,7 +97,7 @@ func (c *Cluster) Start() {
 		EndKey:      []byte{},
 		RegionEpoch: regionEpoch,
 	}
-	
+
 	for storeID, engine := range c.engines {
 		peer := NewPeer(storeID, storeID)
 		firstRegion.Peers = append(firstRegion.Peers, peer)
@@ -181,13 +181,11 @@ func (c *Cluster) AllocPeer(storeID uint64) *metapb.Peer {
 }
 
 func (c *Cluster) Request(key []byte, reqs []*raft_cmdpb.Request, timeout time.Duration) (*raft_cmdpb.RaftCmdResponse, *badger.Txn) {
-	log.Infof("key:%s,reqs%+v", key, reqs)
 	startTime := time.Now()
 	for i := 0; i < 10 || time.Now().Sub(startTime) < timeout; i++ {
 		region := c.GetRegion(key)
 		regionID := region.GetId()
 		req := NewRequest(regionID, region.RegionEpoch, reqs)
-		log.Infof("+++++Request %dth req, reqs: %+v", i, req.Requests)
 		resp, txn := c.CallCommandOnLeader(&req, timeout)
 		if resp == nil {
 			// it should be timeouted innerly
@@ -200,7 +198,6 @@ func (c *Cluster) Request(key []byte, reqs []*raft_cmdpb.Request, timeout time.D
 		}
 		return resp, txn
 	}
-	log.Info("++++++Requset request timeout panic")
 	panic("request timeout")
 }
 

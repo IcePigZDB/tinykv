@@ -150,7 +150,8 @@ func TestRollbackOtherTxn4C(t *testing.T) {
 func TestCheckTxnStatusTtlExpired4C(t *testing.T) {
 	builder := newBuilder(t)
 	// ts 100
-	// TODO what is the difference of LockTS and currentTS?
+	// NOTE what is the difference of LockTS and currentTS?
+	// LockTS is used to find value, currentTs used to check TTL.
 	cmd := builder.checkTxnStatusRequest([]byte{3})
 	builder.init([]kv{
 		{cf: engine_util.CfDefault, key: []byte{3}, ts: cmd.LockTs, value: []byte{42}},
